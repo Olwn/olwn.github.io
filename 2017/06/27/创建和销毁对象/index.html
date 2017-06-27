@@ -12,7 +12,7 @@
 <meta property="og:url" content="http://yoursite.com/2017/06/27/创建和销毁对象/index.html">
 <meta property="og:site_name" content="Blog">
 <meta property="og:description" content="对于类的使用者，获取实例的方式通常是调用该类的构造方法。构造方法是一种特殊的方法，它的名字只能和类名相同。如果要允许不同创建方式，只能构建参数签名不同的构造方法。另外，每调用一次构造方法，就会有一个新的对象产生，这在某些场景下不适用，比如单(多)例模式。简单的说，构造方法的灵活性不够。当然，得到类实例不一定通过构造方法，普通的method同样可以返回对象。通常把静态的，返回类型和所属类相同的方法称">
-<meta property="og:updated_time" content="2017-06-27T14:17:03.000Z">
+<meta property="og:updated_time" content="2017-06-27T14:31:16.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="创建和销毁对象">
 <meta name="twitter:description" content="对于类的使用者，获取实例的方式通常是调用该类的构造方法。构造方法是一种特殊的方法，它的名字只能和类名相同。如果要允许不同创建方式，只能构建参数签名不同的构造方法。另外，每调用一次构造方法，就会有一个新的对象产生，这在某些场景下不适用，比如单(多)例模式。简单的说，构造方法的灵活性不够。当然，得到类实例不一定通过构造方法，普通的method同样可以返回对象。通常把静态的，返回类型和所属类相同的方法称">
@@ -91,7 +91,10 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>对于类的使用者，获取实例的方式通常是调用该类的构造方法。构造方法是一种特殊的方法，它的名字只能和类名相同。如果要允许不同创建方式，只能构建参数签名不同的构造方法。另外，每调用一次构造方法，就会有一个新的对象产生，这在某些场景下不适用，比如单(多)例模式。简单的说，构造方法的灵活性不够。当然，得到类实例不一定通过构造方法，普通的method同样可以返回对象。通常把静态的，返回类型和所属类相同的方法称为factory method。它具有以下几点优势。</p>
-<h4 id="有名称"><a href="#有名称" class="headerlink" title="有名称"></a>有名称</h4><h4 id="重用对象"><a href="#重用对象" class="headerlink" title="重用对象"></a>重用对象</h4><h4 id="返回子类"><a href="#返回子类" class="headerlink" title="返回子类"></a>返回子类</h4><p>“No free lunch”告诉我们，好处总是有成本的。引入静态工厂方法的类，通常会屏蔽掉其构造函数，通过private访问标识，这样类不能够再被继承，因为Java中规定了子类构造函数必须调用父类构造函数。另一点是，工厂构造方法和类中的普通静态方法没有任何区别，生成的JavaDoc里它们会被放在一起，而不会像构造方法那样单列在一个类别。这对于类的使用者来说，可能不那么方便，需要浏览所有static方法才能知道如何构造实例。也许JavaDoc应该加入对静态工厂方法的支持。目前的缓解方式是命名约束</p>
+<h4 id="有名称"><a href="#有名称" class="headerlink" title="有名称"></a>有名称</h4><h4 id="重用对象"><a href="#重用对象" class="headerlink" title="重用对象"></a>重用对象</h4><h4 id="返回子类"><a href="#返回子类" class="headerlink" title="返回子类"></a>返回子类</h4><h4 id="更简单的参数化构造"><a href="#更简单的参数化构造" class="headerlink" title="更简单的参数化构造"></a>更简单的参数化构造</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">static</span> &lt;K, V&gt; <span class="function">HashMap&lt;K, V&gt; <span class="title">newInstance</span><span class="params">()</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> <span class="keyword">new</span> HashMap&lt;K, V&gt;();</div><div class="line">&#125;</div><div class="line"><span class="comment">// 类型推断</span></div><div class="line">Map&lt;String, Integer&gt; m = newInstance();</div></pre></td></tr></table></figure>
+<p>vs</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">Map&lt;String, Integer&gt; m = <span class="keyword">new</span> HashMap&lt;String, Integer&gt;();</div><div class="line"><span class="comment">// 不过JDK7中已经有了更好的类型推断</span></div><div class="line">Map&lt;String, Integer&gt; m = <span class="keyword">new</span> HashMap&lt;&gt;();</div></pre></td></tr></table></figure>
+<p>“No free lunch”告诉我们，好处总是有成本的。引入静态工厂方法的类，通常会屏蔽掉其构造函数，通过private访问标识，这样类不能够再被继承，因为Java中规定了子类构造函数必须调用父类构造函数。另一点是，工厂构造方法和类中的普通静态方法没有任何区别，生成的JavaDoc里它们会被放在一起，而不会像构造方法那样单列在一个类别。这对于类的使用者来说，可能不那么方便，需要浏览所有static方法才能知道如何构造实例。也许JavaDoc应该加入对静态工厂方法的支持。目前的缓解方式是命名约束</p>
 <ul>
 <li>getInstance 获得对象，可能是新的，可能是已有的</li>
 <li>newInstance 生成新对象</li>
@@ -102,7 +105,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/27/创建和销毁对象/" data-id="cj4fnov2400007pjg2wmz0a0w" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/06/27/创建和销毁对象/" data-id="cj4fo76b40000a4jg76ar35rs" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li></ul>
