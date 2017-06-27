@@ -12,7 +12,7 @@
 <meta property="og:url" content="http://yoursite.com/2017/06/27/创建和销毁对象/index.html">
 <meta property="og:site_name" content="Blog">
 <meta property="og:description" content="对于类的使用者，获取实例的方式通常是调用该类的构造方法。构造方法是一种特殊的方法，它的名字只能和类名相同。如果要允许不同创建方式，只能构建参数签名不同的构造方法。另外，每调用一次构造方法，就会有一个新的对象产生，这在某些场景下不适用，比如单(多)例模式。简单的说，构造方法的灵活性不够。当然，得到类实例不一定通过构造方法，普通的method同样可以返回对象。通常把静态的，返回类型和所属类相同的方法称">
-<meta property="og:updated_time" content="2017-06-27T13:56:51.000Z">
+<meta property="og:updated_time" content="2017-06-27T14:17:03.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="创建和销毁对象">
 <meta name="twitter:description" content="对于类的使用者，获取实例的方式通常是调用该类的构造方法。构造方法是一种特殊的方法，它的名字只能和类名相同。如果要允许不同创建方式，只能构建参数签名不同的构造方法。另外，每调用一次构造方法，就会有一个新的对象产生，这在某些场景下不适用，比如单(多)例模式。简单的说，构造方法的灵活性不够。当然，得到类实例不一定通过构造方法，普通的method同样可以返回对象。通常把静态的，返回类型和所属类相同的方法称">
@@ -59,7 +59,7 @@
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -91,11 +91,18 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>对于类的使用者，获取实例的方式通常是调用该类的构造方法。构造方法是一种特殊的方法，它的名字只能和类名相同。如果要允许不同创建方式，只能构建参数签名不同的构造方法。另外，每调用一次构造方法，就会有一个新的对象产生，这在某些场景下不适用，比如单(多)例模式。简单的说，构造方法的灵活性不够。当然，得到类实例不一定通过构造方法，普通的method同样可以返回对象。通常把静态的，返回类型和所属类相同的方法称为factory method。它具有以下几点优势。</p>
-<h4 id="有名称"><a href="#有名称" class="headerlink" title="有名称"></a>有名称</h4>
+<h4 id="有名称"><a href="#有名称" class="headerlink" title="有名称"></a>有名称</h4><h4 id="重用对象"><a href="#重用对象" class="headerlink" title="重用对象"></a>重用对象</h4><h4 id="返回子类"><a href="#返回子类" class="headerlink" title="返回子类"></a>返回子类</h4><p>“No free lunch”告诉我们，好处总是有成本的。引入静态工厂方法的类，通常会屏蔽掉其构造函数，通过private访问标识，这样类不能够再被继承，因为Java中规定了子类构造函数必须调用父类构造函数。另一点是，工厂构造方法和类中的普通静态方法没有任何区别，生成的JavaDoc里它们会被放在一起，而不会像构造方法那样单列在一个类别。这对于类的使用者来说，可能不那么方便，需要浏览所有static方法才能知道如何构造实例。也许JavaDoc应该加入对静态工厂方法的支持。目前的缓解方式是命名约束</p>
+<ul>
+<li>getInstance 获得对象，可能是新的，可能是已有的</li>
+<li>newInstance 生成新对象</li>
+<li>newSubTypeA 获得某个子类对象</li>
+<li>build 某些需要复杂构造过程的类有Builder类，比如URL</li>
+</ul>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/27/创建和销毁对象/" data-id="cj4fn0t9k000261jgoig643js" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/06/27/创建和销毁对象/" data-id="cj4fnov2400007pjg2wmz0a0w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li></ul>
@@ -108,7 +115,7 @@
   
   
     <a href="/2017/06/27/hello/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Ouder</strong>
+      <strong class="article-nav-caption">Older</strong>
       <div class="article-nav-title">hello</div>
     </a>
   
@@ -126,7 +133,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Labels</h3>
+    <h3 class="widget-title">Tags</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li></ul>
     </div>
@@ -145,7 +152,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archieven</h3>
+    <h3 class="widget-title">Archives</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
     </div>
@@ -155,7 +162,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recente berichten</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
