@@ -6,7 +6,7 @@
   <title>软引用 | Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="用软引用堵住内存泄露Brian Goetz原文链接 GC使得Java程序不再发生内存泄露，至少对于狭窄定义的内存泄露是成立的，但是这并不意味着我们可以完全不关注程序中的对象的生命周期。Java中的内存泄露的产生，通常是由于我们忽略或者是错误的管理了对象的生命周期。比如，上篇文章里解释了，错误的生命周期定义会导致意外的对象滞留，它发生于当我们试图把transient对象和类成员关联起来的时候。另外，">
-<meta name="keywords" content="Java,译文,GC,Brain Goetz">
+<meta name="keywords" content="Java,译文,Brain Goetz,GC">
 <meta property="og:type" content="article">
 <meta property="og:title" content="软引用">
 <meta property="og:url" content="http://yoursite.com/2017/07/01/软引用/index.html">
@@ -57,9 +57,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -116,7 +116,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/07/01/软引用/" data-id="cj4r6g21j0005zljgird6badm" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/07/01/软引用/" data-id="cj55h0yz00005kijgo9i24ky0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GC/">GC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -128,7 +128,7 @@
 <nav id="article-nav">
   
     <a href="/2017/07/05/同步锁/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Récent</strong>
+      <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
           同步锁
@@ -138,7 +138,7 @@
   
   
     <a href="/2017/06/28/Builder构建器/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Ancien</strong>
+      <strong class="article-nav-caption">Older</strong>
       <div class="article-nav-title">Builder构建器</div>
     </a>
   
@@ -156,7 +156,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Mot-clés</h3>
+    <h3 class="widget-title">Tags</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -166,7 +166,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
       <a href="/tags/Brain-Goetz/" style="font-size: 20px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 20px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 10px;">GC</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/同步/" style="font-size: 10px;">同步</a> <a href="/tags/构造/" style="font-size: 20px;">构造</a> <a href="/tags/译文/" style="font-size: 20px;">译文</a>
     </div>
@@ -185,7 +185,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Articles récents</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
@@ -222,7 +222,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Brav3heart<br>
-      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>

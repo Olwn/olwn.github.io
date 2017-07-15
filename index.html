@@ -55,9 +55,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -92,17 +92,28 @@
       
         <p><a href="https://www.ibm.com/developerworks/java/library/j-jtp10264/index.html?ca=drs-" target="_blank" rel="external">原文链接</a></p>
 <p>多线程和并发不是新话题，但是Java首先将跨平台的线程模型和内存模型纳入到语言特性中。核心库包括了<code>Thread</code>类，可以用于创建、启动和维护线程，另外还包含了可用于添加线程并发约束的关键字<code>synchronized</code>和<code>volatile</code>。虽然这些类和特性简化了并发类的开发，但不意味着那变得很容易。</p>
-<h2 id="synchronized简介"><a href="#synchronized简介" class="headerlink" title="synchronized简介"></a><code>synchronized</code>简介</h2><p>将一段代码声明为<code>synchronized</code>会带来两个重要的效果，原子性和可见性。原子性意味着任意时间点只有一个线程可以执行这段代码，这可以用来避免多个线程更新共享变量的冲突。可见性与内存缓存和编译器优化相关。通常，线程拥有缓存变量的能力，这会导致变量的修改不会立即对其他线程可见。但是，如果开发者使用了同步，运行时<code>synchronized</code>段内的代码所产生的修改会一定对稍后其他进入该段的线程可见。</p>
+<h2 id="synchronized简介"><a href="#synchronized简介" class="headerlink" title="synchronized简介"></a><code>synchronized</code>简介</h2><p>将一段代码声明为<code>synchronized</code>会带来两个重要的效果，原子性和可见性。原子性意味着任意时间点只有一个线程可以执行这段代码，这可以用来避免多个线程更新共享变量的冲突。可见性与内存缓存和编译器优化相关。通常，线程拥有缓存变量的能力，这会导致变量的修改不会立即对其他线程可见。但是，如果开发者使用了同步，运行时<code>synchronized</code>段内的代码所产生的修改一定会对之后其他执行该段代码的线程可见。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">synchronized</span> (lockObject) &#123; </div><div class="line">  <span class="comment">// update object state</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p><code>volatile</code>有类似的作用。所以同步机制能够可靠的更新共享变量，保证其他同步线程可以看到最新的变量值。这种清晰、跨平台的的内存模型使得创建”编写一次，随处运行”的并发类成为了可能。下面的实现规则很简单。</p>
 <p><strong>任何时候，读一个刚好可能正在被其他线程写的变量，必须使用同步</strong></p>
 <p>最近（2004年底）的JVM对锁执行进行了优化，当不存在多个线程竞争锁时，同步代码的成本不会太高。</p>
-<h2 id="改进synchronized"><a href="#改进synchronized" class="headerlink" title="改进synchronized"></a>改进<code>synchronized</code></h2><p>似乎前面讲的同步方法已经很好了？但是为什么JSR166组花了很长时间开发<code>java.util.concurrent.lock</code>呢？<code>synchronized</code>确实不错，但是远不完美。它有一些功能上的缺陷，这种方式不能中断一个正在等待获取锁的线程，也不能poll for a lock。<code>synchronized</code>同步机制要求锁在同一个栈上获取和释放，大多数情况下这没错。但是少数情形中，非阻塞结构锁(non-block-structured locking)好很好。</p>
-<h2 id="ReentrantLock类"><a href="#ReentrantLock类" class="headerlink" title="ReentrantLock类"></a><code>ReentrantLock</code>类</h2>
+<h2 id="改进synchronized"><a href="#改进synchronized" class="headerlink" title="改进synchronized"></a>改进<code>synchronized</code></h2><p>似乎前面讲的同步方法已经很好了？但是为什么JSR166组花了很长时间开发<code>java.util.concurrent.lock</code>呢？<code>synchronized</code>确实不错，但是远不完美。它有一些功能上的缺陷，这种方式不能中断一个正在等待获取锁的线程，也不能poll for a lock。<code>synchronized</code>同步机制要求锁在同一个栈上获取和释放，大多数情况下这没错。但是少数情形中，非阻塞结构锁(non-block-structured locking)更好。</p>
+<h2 id="ReentrantLock类"><a href="#ReentrantLock类" class="headerlink" title="ReentrantLock类"></a><code>ReentrantLock</code>类</h2><p><code>java.util.concurrent.lock</code>提供了加锁的抽象，允许你自己实现同步而不是简单采用<code>synchronized</code>。同时它提供了多种同步实现，包含了不同的调度算法、性能特点或同步语义。<code>ReentrantLock</code>类实现了<code>Lock</code>接口，具有和<code>synchronized</code>相同的并发和内存语义，但是还有额外的特性，比如lock polling，计时等待，中断等待。另外，它在大量线程竞争锁的场景下的性能有很大的改进。</p>
+<p>为什么叫<em>reentrant</em>锁？有一个计数器和锁关联，当一个持有锁的线程再次申请该锁时，计数器会加一，如果要释放该锁，必须有两次释放操作。这和<code>synchronized</code>一样，如果一个线程正在执行<code>synchronized</code>内的代码，再遇到一个<code>synchronized</code>也可以继续执行，只是需要退出第一个<code>synchronized</code>后锁才得到释放。</p>
+<p>下面的代码是<code>ReentrantLock</code>的一个简单例子，注意<code>finally</code>语句十分重要，必须通过<code>finally</code>释放锁，否则如果<code>try</code>块中抛出了异常，该锁永远不会得到释放。这听起来很简单，但是极度重要。忘记使用<code>finally</code>释放锁会给应用程序埋下一个定时炸弹，而且爆炸时很难追踪。<code>synchronized</code>不存在这样的问题。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">Lock lock = <span class="keyword">new</span> ReentrantLock();</div><div class="line"> </div><div class="line">lock.lock();</div><div class="line"><span class="keyword">try</span> &#123; </div><div class="line">  <span class="comment">// update object state</span></div><div class="line">&#125;</div><div class="line"><span class="keyword">finally</span> &#123;</div><div class="line">  lock.unlock(); </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>ReentrantLock</code>的优势是高并发下的可扩展性(不知道现在的JVM版本对<code>synchronized</code>的竞争性能有没有优化？)。</p>
+<h2 id="ReentrantLock和synchronized可扩展性对比"><a href="#ReentrantLock和synchronized可扩展性对比" class="headerlink" title="ReentrantLock和synchronized可扩展性对比"></a><code>ReentrantLock</code>和<code>synchronized</code>可扩展性对比</h2><p>Time Peierls构建了一个简单的评测方式，用于衡量这两者的扩展性，实现是基于线性一致伪随机数生成器(PRNG)。这个例子很贴切因为<code>nextRandom()</code>有调用到PRNG，所以这个评测实际上衡量了<code>ReentrantLock</code>和<code>synchronized</code>。</p>
+<p>在这个评测中，我们有一个接口<code>PseudoRandom</code>，有唯一的方法<code>nextRandom(int bound)</code>。这个接口的功能和<code>java.util.Random</code>非常相似。因为PRNG会使用上次生成的随机数作为下次调用的参数，所以确保修改这个状态的代码不被其他线程抢占十分重要，需要加锁来保证。我们创建了<code>PseudoRandom</code>的两种实现，一种使用同步关键字，另一种使用<code>ReentrantLock</code>。驱动程序启动一些线程，每个线程不间断的模拟摇骰子，然后计算每秒钟摇的次数。图1和图2展示了结果。</p>
+<p><img src="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure1.jpg" alt="图1 吞吐量"></p>
+<p><img src="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure2.jpg" alt="图2"></p>
+<p>上面两图的曲线展示了两种实现下，每个线程每秒钟的吞吐量。随着线程数量增加，两种实现的吞吐量都能很快达到收敛值，这意味着处理器得到了完全的利用，部分时间用于生成随机数，部分时间用在调度上。你会注意到<code>synchronized</code>在线程数较多时的性能非常差，花了大量的时间在线程调度上，但是<code>Lock</code>就不存在这样的缺陷。</p>
+<h2 id="条件变量"><a href="#条件变量" class="headerlink" title="条件变量"></a>条件变量</h2><p><code>Object</code>类包含了几个特别的方法，用于线程见通信 — <code>wait()</code> <code>notify()</code> <code>notifyAll</code>。有经验的程序员从来不使用它们，它们非常脆弱，容易出错。幸运的是，JDK5.0引入了<code>java.util.concurrent</code>。</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/07/05/同步锁/" data-id="cj4r6g21f0004zljg30r09la5" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/07/05/同步锁/" data-id="cj55h0yyh0001kijg3u5ivfad" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -162,7 +173,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/07/01/软引用/" data-id="cj4r6g21j0005zljgird6badm" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/07/01/软引用/" data-id="cj55h0yz00005kijgo9i24ky0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GC/">GC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -206,7 +217,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/28/Builder构建器/" data-id="cj4r6g2100000zljgj0fkykok" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/06/28/Builder构建器/" data-id="cj55h0yyl0002kijgwwtdhccv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
@@ -258,7 +269,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/27/创建和销毁对象/" data-id="cj4r6g21d0003zljgutq0thf3" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/06/27/创建和销毁对象/" data-id="cj55h0yyz0004kijgqjwa3y5o" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
@@ -305,7 +316,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/27/hello-world/" data-id="cj4r6g2150001zljg8hd7hlyx" class="article-share-link">Partager</a>
+      <a data-url="http://yoursite.com/2017/06/27/hello-world/" data-id="cj55h0yxp0000kijgl1btgs8f" class="article-share-link">Share</a>
       
       
     </footer>
@@ -325,7 +336,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Mot-clés</h3>
+    <h3 class="widget-title">Tags</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -335,7 +346,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
       <a href="/tags/Brain-Goetz/" style="font-size: 20px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 20px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 10px;">GC</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/同步/" style="font-size: 10px;">同步</a> <a href="/tags/构造/" style="font-size: 20px;">构造</a> <a href="/tags/译文/" style="font-size: 20px;">译文</a>
     </div>
@@ -354,7 +365,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Articles récents</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
@@ -391,7 +402,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Brav3heart<br>
-      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
