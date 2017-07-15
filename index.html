@@ -108,12 +108,13 @@
 <p><img src="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure1.jpg" alt="图1 吞吐量"></p>
 <p><img src="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure2.jpg" alt="图2"></p>
 <p>上面两图的曲线展示了两种实现下，每个线程每秒钟的吞吐量。随着线程数量增加，两种实现的吞吐量都能很快达到收敛值，这意味着处理器得到了完全的利用，部分时间用于生成随机数，部分时间用在调度上。你会注意到<code>synchronized</code>在线程数较多时的性能非常差，花了大量的时间在线程调度上，但是<code>Lock</code>就不存在这样的缺陷。</p>
-<h2 id="条件变量"><a href="#条件变量" class="headerlink" title="条件变量"></a>条件变量</h2><p><code>Object</code>类包含了几个特别的方法，用于线程见通信 — <code>wait()</code> <code>notify()</code> <code>notifyAll</code>。有经验的程序员从来不使用它们，它们非常脆弱，容易出错。幸运的是，JDK5.0引入了<code>java.util.concurrent</code>。</p>
-
+<h2 id="条件变量"><a href="#条件变量" class="headerlink" title="条件变量"></a>条件变量</h2><p><code>Object</code>类包含了几个特别的方法，用于线程见通信 — <code>wait()</code>、<code>notify()</code>、<code>notifyAll()</code>。有经验的程序员从来不使用它们，它们非常脆弱，容易出错。幸运的是，JDK5.0引入了<code>java.util.concurrent</code>。</p>
+<p>如果要调用一个对象的notify或者wait，你必须持有那个对象的锁。就像Lock是同步的抽象，Condition是wait和notify的抽象。一个Lock对象扮演着相关联的条件变量的工厂角色，不同于wait和notify的是，一个Lock可以有对个关联的条件。这简化了很多并发算法的开发。比如，Condition的JavaDoc中展示了一个例子，使用两个锁实现有界限的缓冲区，’not full’和’not empty’更加可读，也更有效率。Condition的类似于wait notify notifyAll的方法，被命名为await signal signalAll，因为它们不能覆盖Object的那些方法。</p>
+<h2 id="那不公平"><a href="#那不公平" class="headerlink" title="那不公平"></a>那不公平</h2>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/07/05/同步锁/" data-id="cj55h46uy0000lrjgcvshi41v" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/07/05/同步锁/" data-id="cj55hqgzu0004mxjgqrlp6nl3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -173,7 +174,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/07/01/软引用/" data-id="cj55h46vc0004lrjg4aeuip2n" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/07/01/软引用/" data-id="cj55hqgzx0005mxjg6ryyoumf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GC/">GC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -217,7 +218,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/28/Builder构建器/" data-id="cj55h46v30001lrjgiioyd5xu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/06/28/Builder构建器/" data-id="cj55hqgzi0000mxjgkcbqyhe3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
@@ -269,7 +270,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/27/创建和销毁对象/" data-id="cj55h46vf0005lrjg5vj2s5b4" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/06/27/创建和销毁对象/" data-id="cj55hqgzs0003mxjg1d6rgxie" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
@@ -316,7 +317,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/27/hello-world/" data-id="cj55h46va0003lrjgv0bmm1hj" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/06/27/hello-world/" data-id="cj55hqgzm0001mxjgeii96qlr" class="article-share-link">Share</a>
       
       
     </footer>
