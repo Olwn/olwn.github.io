@@ -109,12 +109,25 @@
 <p><img src="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure2.jpg" alt="图2"></p>
 <p>上面两图的曲线展示了两种实现下，每个线程每秒钟的吞吐量。随着线程数量增加，两种实现的吞吐量都能很快达到收敛值，这意味着处理器得到了完全的利用，部分时间用于生成随机数，部分时间用在调度上。你会注意到<code>synchronized</code>在线程数较多时的性能非常差，花了大量的时间在线程调度上，但是<code>Lock</code>就不存在这样的缺陷。</p>
 <h2 id="条件变量"><a href="#条件变量" class="headerlink" title="条件变量"></a>条件变量</h2><p><code>Object</code>类包含了几个特别的方法，用于线程见通信 — <code>wait()</code>、<code>notify()</code>、<code>notifyAll()</code>。有经验的程序员从来不使用它们，它们非常脆弱，容易出错。幸运的是，JDK5.0引入了<code>java.util.concurrent</code>。</p>
-<p>如果要调用一个对象的notify或者wait，你必须持有那个对象的锁。就像Lock是同步的抽象，Condition是wait和notify的抽象。一个Lock对象扮演着相关联的条件变量的工厂角色，不同于wait和notify的是，一个Lock可以有对个关联的条件。这简化了很多并发算法的开发。比如，Condition的JavaDoc中展示了一个例子，使用两个锁实现有界限的缓冲区，’not full’和’not empty’更加可读，也更有效率。Condition的类似于wait notify notifyAll的方法，被命名为await signal signalAll，因为它们不能覆盖Object的那些方法。</p>
-<h2 id="那不公平"><a href="#那不公平" class="headerlink" title="那不公平"></a>那不公平</h2>
+<p>如果要调用一个对象的notify或者wait，你必须持有那个对象的锁。就像Lock是同步的抽象，Condition是wait和notify的抽象。一个Lock对象扮演着相关联的条件变量的工厂角色，不同于wait和notify的是，一个Lock可以产生对个关联的条件。这简化了很多并发算法的开发。比如，Condition的JavaDoc中展示了一个例子，使用两个锁实现有界限的缓冲区，’not full’和’not empty’更加可读，也更有效率。Condition的类似于wait notify notifyAll的方法，被命名为await signal signalAll，因为它们不能覆盖Object的那些方法。</p>
+<h2 id="那不公平"><a href="#那不公平" class="headerlink" title="那不公平"></a>那不公平</h2><p>如果仔细阅读JavaDoc，你会发现<code>ReentrantLock</code>的构造方法有一个boolean参数，让你选择构造一个公平的还是不公平的锁。公平锁意味着线程会按照申请的时间先后顺序获得锁，不公平锁不保证这一点。</p>
+<p>为什么需要这个参数？把所有锁都设置为公平的有什么不好吗？问题在于公平性是有代价的。要保证公平必须使用同步，这会导致吞吐量的大幅下降，相比于非公平锁。大多数时候使用默认的false参数(不公平)就可以了，除非你的应用依赖于线程必须按照申请顺序获得锁。</p>
+<p><code>synchronized</code>呢？内建的监视器锁公平吗？答案是no。但是从没有人抱怨线程饥饿，因为JVM保证了所有线程最终会获得锁。大多数情况下，大致公平就足够了，成本远低于绝对公平。如果你觉得<code>synchronized</code>没有问题，那么也不要担心<code>ReentrantLock</code>。</p>
+<p>图3和图4包含了图1、图2相同的数据，添加了公平锁的情况。你可以看到公平性是有成本的。除非你真的需要，不要使用这种锁。</p>
+<p><img src="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure3.jpg" alt="图3"></p>
+<p><img src="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure4.jpg" alt="图4"></p>
+<h2 id="还有其他好处吗？"><a href="#还有其他好处吗？" class="headerlink" title="还有其他好处吗？"></a>还有其他好处吗？</h2><p>似乎<code>ReentrantLock</code>在每个方面都比<code>synchronized</code>好，它具有<code>synchronized</code>一样的功能，具有相同的内存和并发语义，具有<code>synchronized</code>没有的特性，有更好的并发性能。所以，似乎我们应该丢掉<code>synchronized</code>？甚至应该用<code>ReentrantLock</code>重写所有的<code>synchronized</code>？实际上，有一些Java入门书已经采取了这种意见，一律使用Lock，而不要使用<code>synchronized</code>。</p>
+<h4 id="现在丢弃synchronized为时过早"><a href="#现在丢弃synchronized为时过早" class="headerlink" title="现在丢弃synchronized为时过早"></a>现在丢弃<code>synchronized</code>为时过早</h4><p>虽然<code>ReentrantLock</code>是一个非常好的同步实现方式，但是我认为把<code>synchronized</code>当做一个过时的特性是一个严重的错误。<code>java.util.concurrent.lock</code>是面向高级用户和复杂场景的工具。通常，你可以使用简单的<code>synchronized</code>除非确实需要<code>Lock</code>的特性，或者你有证据表明锁的可扩展性是性能瓶颈。</p>
+<p>为什么我要提这一点？其实<code>synchronized</code>有一些优点的。</p>
+<p>首先，使用<code>synchronized</code>不会忘记释放锁，JVM保证了这一点。使用<code>Lock</code>时有可能忘记使用<code>finally</code>释放锁，这取决于程序员的实现。你的程序会通过测试，在真正出现问题时难以调试，所以我不建议初级开发者使用<code>Lock</code>。其次，如果是JVM负责管理锁的获取和释放，那么JVM在dump文件中包含这些信息。这些信息对于调试非常有价值，因为它们包含了发现死锁或其他错误行为的线索。Lock是普通类，JVM不知道哪个它被哪个线程拥有。然后，<code>synchronized</code>对于所有开发者都很熟悉，可以运行在所有JVM版本上。</p>
+<h2 id="何时选择ReentrantLock"><a href="#何时选择ReentrantLock" class="headerlink" title="何时选择ReentrantLock"></a>何时选择<code>ReentrantLock</code></h2><p>答案非常简单，当你真的需要它的特性时，包括计时等待、中断等待，非阻塞结构锁，多重条件，锁polling。<code>ReentrantLock</code>有可扩展性的优势，在高并发高竞争的场景中使用它。我建议使用<code>synchronized</code>，除非你有证据表明它的性能不够，而不仅仅觉得凭直觉认为<code>ReentrantLock</code>就可以获得更好的性能。记住，这是高级用户的高级工具，(真正的高级用户倾向于使用最简单够用的工具)。一个在很多时候都使用的道理是，先保证把事情做正确，不要一开始就想着要达到最好的效率。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><code>Lock</code>框架是<code>synchronized</code>的替代，提供了很多额外的特性。然而这并不意味着你一定要使用<code>ReentrantLock</code>。你首先要准确的判断是否需要这些新特征。大多数情况下，答案是no，<code>synchronized</code>就足够了，它和JVM协同工作，被广泛的开发者理解，能够在所有的JVM版本上运行，不容易出错。</p>
+<p>在真正需要的时候使用<code>Lock</code>，你会很享受它的。</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/07/05/同步锁/" data-id="cj55hqgzu0004mxjgqrlp6nl3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/07/05/同步锁/" data-id="cj5650w0v0000wzjg65kmtghy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -174,7 +187,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/07/01/软引用/" data-id="cj55hqgzx0005mxjg6ryyoumf" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/07/01/软引用/" data-id="cj5650w1d0005wzjgx1fhr5k1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GC/">GC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -218,7 +231,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/28/Builder构建器/" data-id="cj55hqgzi0000mxjgkcbqyhe3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/06/28/Builder构建器/" data-id="cj5650w110001wzjgadmckg3z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
@@ -270,7 +283,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/27/创建和销毁对象/" data-id="cj55hqgzs0003mxjg1d6rgxie" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/06/27/创建和销毁对象/" data-id="cj5650w1b0004wzjggwyihjbt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
@@ -317,7 +330,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/27/hello-world/" data-id="cj55hqgzm0001mxjgeii96qlr" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/06/27/hello-world/" data-id="cj5650w190003wzjgxmee55my" class="article-share-link">Share</a>
       
       
     </footer>
