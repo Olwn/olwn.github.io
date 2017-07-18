@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="Blog">
 <meta property="og:description" content="原文链接Dynamic compilation and performance measurement 最近我在写一篇文章解剖一个写得很烂的评测。毕竟，我们程序员会被用性能来评价，我们都喜欢理解代码的性能特点。当我偶尔写了一点和性能相关的东西时，会收到很多邮件，说为什么我的测试结果和你的不一样。这反映出大家并不了解JVM是如何执行字节码的。现在让我们来看看JVM的底层吧。理解动态编译和优化是辨别一">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp12214/java_diagram.gif">
-<meta property="og:updated_time" content="2017-07-18T15:08:20.000Z">
+<meta property="og:updated_time" content="2017-07-18T15:11:28.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java动态编译技术">
 <meta name="twitter:description" content="原文链接Dynamic compilation and performance measurement 最近我在写一篇文章解剖一个写得很烂的评测。毕竟，我们程序员会被用性能来评价，我们都喜欢理解代码的性能特点。当我偶尔写了一点和性能相关的东西时，会收到很多邮件，说为什么我的测试结果和你的不一样。这反映出大家并不了解JVM是如何执行字节码的。现在让我们来看看JVM的底层吧。理解动态编译和优化是辨别一">
@@ -61,7 +61,7 @@
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -189,12 +189,12 @@
 </table>
 <p>这里发生了什么？在预热的<code>for</code>循环结束后，<code>RoundaboutAdder</code>和<code>runABunch()</code>已经被编译了，编译器对<code>ra.operate()</code>作了单态转换，所以第一次运行<code>runABunch</code>速度非常快。第二次的时候，编译器必须去掉这种优化，还原为多态调用，再考虑到再次编译的时间，所以第二次慢了许多。第三次，编译过程少了一些，所以运行时间稍微短了一点。（实际上，编译器会折叠<code>RoundaboutAdder</code>和<code>DoubleAdder</code>的代码，折叠后的代码和<code>SimpleAdder</code>完全一样。）第一次运行的肯定是最快的，不管使用那个<code>Operator</code>子类。</p>
 <p>所以，这个评测得出了什么结论？什么也没有，除了告诉我们评测动态编译的代码是远比想象的要复杂。</p>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>例子的结果明显是错误的，容易看出哪里不对劲。但是，如果结果没有这么离奇，你就不会轻易的察觉出问题。虽然这里给出的例子展示出的是评测污染的常见原因，但还有很多。我们应该得到的教训是，不要想当然的认为你的评测结果就反映了代码的运行效率。实际上，大多数时候都不是这样的。如果不是运行了很长时间，请对性能评测结果保持怀疑。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>例子的结果错得离谱，我们容易察觉出评测可能写得有问题。但是，如果结果没有这么离奇，你就不会轻易的察觉出问题。虽然这里给出的例子展示出的是评测污染的常见原因，但还有很多。我们应该得到教训，不要想当然的认为你的评测结果就反映了代码的运行效率。实际上，大多数时候都不是这样的。如果不是运行了很长时间，请对性能评测结果保持怀疑。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/07/17/Java动态编译技术/" data-id="cj59ps8g80001t9jg1udc0g2s" class="article-share-link">Delen</a>
+      <a data-url="http://yoursite.com/2017/07/17/Java动态编译技术/" data-id="cj59pvq530000ucjgsjs1zvkl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JVM/">JVM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -207,7 +207,7 @@
   
   
     <a href="/2017/07/16/深入探讨原子性/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Ouder</strong>
+      <strong class="article-nav-caption">Older</strong>
       <div class="article-nav-title">深入探讨原子性</div>
     </a>
   
@@ -225,7 +225,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Labels</h3>
+    <h3 class="widget-title">Tags</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -244,7 +244,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archieven</h3>
+    <h3 class="widget-title">Archives</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
     </div>
@@ -254,7 +254,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recente berichten</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
