@@ -5,21 +5,21 @@
   
   <title>同步锁 | Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="原文链接 多线程和并发不是新话题，但是Java首先将跨平台的线程模型和内存模型纳入到语言特性中。核心库包括了Thread类，可以用于创建、启动和维护线程，另外还包含了可用于添加线程并发约束的关键字synchronized和volatile。虽然这些类和特性简化了并发类的开发，但不意味着那变得很容易。 synchronized简介将一段代码声明为synchronized会带来两个重要的效果，原子性和">
+  <meta name="description" content="原文链接 多线程和并发不是新话题，但是Java首先将跨平台的线程模型和内存模型纳入到语言特性中。核心库包括了Thread类，可以用于创建、启动和维护线程，另外还包含了可用于添加线程并发约束的关键字synchronized和volatile。虽然这些类和特性简化了并发类的开发，但不意味着那变得很容易。">
 <meta name="keywords" content="Java,译文,Brain Goetz,同步">
 <meta property="og:type" content="article">
 <meta property="og:title" content="同步锁">
 <meta property="og:url" content="http://yoursite.com/2017/07/05/同步锁/index.html">
 <meta property="og:site_name" content="Blog">
-<meta property="og:description" content="原文链接 多线程和并发不是新话题，但是Java首先将跨平台的线程模型和内存模型纳入到语言特性中。核心库包括了Thread类，可以用于创建、启动和维护线程，另外还包含了可用于添加线程并发约束的关键字synchronized和volatile。虽然这些类和特性简化了并发类的开发，但不意味着那变得很容易。 synchronized简介将一段代码声明为synchronized会带来两个重要的效果，原子性和">
+<meta property="og:description" content="原文链接 多线程和并发不是新话题，但是Java首先将跨平台的线程模型和内存模型纳入到语言特性中。核心库包括了Thread类，可以用于创建、启动和维护线程，另外还包含了可用于添加线程并发约束的关键字synchronized和volatile。虽然这些类和特性简化了并发类的开发，但不意味着那变得很容易。">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure1.jpg">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure2.jpg">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure3.jpg">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure4.jpg">
-<meta property="og:updated_time" content="2017-07-16T03:06:10.000Z">
+<meta property="og:updated_time" content="2017-07-18T12:09:28.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="同步锁">
-<meta name="twitter:description" content="原文链接 多线程和并发不是新话题，但是Java首先将跨平台的线程模型和内存模型纳入到语言特性中。核心库包括了Thread类，可以用于创建、启动和维护线程，另外还包含了可用于添加线程并发约束的关键字synchronized和volatile。虽然这些类和特性简化了并发类的开发，但不意味着那变得很容易。 synchronized简介将一段代码声明为synchronized会带来两个重要的效果，原子性和">
+<meta name="twitter:description" content="原文链接 多线程和并发不是新话题，但是Java首先将跨平台的线程模型和内存模型纳入到语言特性中。核心库包括了Thread类，可以用于创建、启动和维护线程，另外还包含了可用于添加线程并发约束的关键字synchronized和volatile。虽然这些类和特性简化了并发类的开发，但不意味着那变得很容易。">
 <meta name="twitter:image" content="https://www.ibm.com/developerworks/java/library/j-jtp10264/figure1.jpg">
   
     <link rel="alternate" href="/atom.xml" title="Blog" type="application/atom+xml">
@@ -62,9 +62,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -96,7 +96,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p><a href="https://www.ibm.com/developerworks/java/library/j-jtp10264/index.html?ca=drs-" target="_blank" rel="external">原文链接</a></p>
-<p>多线程和并发不是新话题，但是Java首先将跨平台的线程模型和内存模型纳入到语言特性中。核心库包括了<code>Thread</code>类，可以用于创建、启动和维护线程，另外还包含了可用于添加线程并发约束的关键字<code>synchronized</code>和<code>volatile</code>。虽然这些类和特性简化了并发类的开发，但不意味着那变得很容易。</p>
+<p>多线程和并发不是新话题，但是Java首先将跨平台的线程模型和内存模型纳入到语言特性中。核心库包括了<code>Thread</code>类，可以用于创建、启动和维护线程，另外还包含了可用于添加线程并发约束的关键字<code>synchronized</code>和<code>volatile</code>。虽然这些类和特性简化了并发类的开发，但不意味着那变得很容易。<br><a id="more"></a></p>
 <h2 id="synchronized简介"><a href="#synchronized简介" class="headerlink" title="synchronized简介"></a><code>synchronized</code>简介</h2><p>将一段代码声明为<code>synchronized</code>会带来两个重要的效果，原子性和可见性。原子性意味着任意时间点只有一个线程可以执行这段代码，这可以用来避免多个线程更新共享变量的冲突。可见性与内存缓存和编译器优化相关。通常，线程拥有缓存变量的能力，这会导致变量的修改不会立即对其他线程可见。但是，如果开发者使用了同步，运行时<code>synchronized</code>段内的代码所产生的修改一定会对之后其他执行该段代码的线程可见。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">synchronized</span> (lockObject) &#123; </div><div class="line">  <span class="comment">// update object state</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p><code>volatile</code>有类似的作用。所以同步机制能够可靠的更新共享变量，保证其他同步线程可以看到最新的变量值。这种清晰、跨平台的的内存模型使得创建”编写一次，随处运行”的并发类成为了可能。下面的实现规则很简单。</p>
@@ -132,7 +132,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/07/05/同步锁/" data-id="cj56ttrpo0008z8jg1d6t3y4h" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/07/05/同步锁/" data-id="cj59jbl450004e7jg9lrmansx" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -144,7 +144,7 @@
 <nav id="article-nav">
   
     <a href="/2017/07/16/深入探讨原子性/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
+      <strong class="article-nav-caption">Récent</strong>
       <div class="article-nav-title">
         
           深入探讨原子性
@@ -154,7 +154,7 @@
   
   
     <a href="/2017/07/01/软引用/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
+      <strong class="article-nav-caption">Ancien</strong>
       <div class="article-nav-title">软引用</div>
     </a>
   
@@ -172,7 +172,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">Mot-clés</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -182,7 +182,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
+    <h3 class="widget-title">Nuage de mot-clés</h3>
     <div class="widget tagcloud">
       <a href="/tags/Atomic/" style="font-size: 10px;">Atomic</a> <a href="/tags/Brain-Goetz/" style="font-size: 16.67px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 13.33px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 10px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/同步/" style="font-size: 13.33px;">同步</a> <a href="/tags/构造/" style="font-size: 13.33px;">构造</a> <a href="/tags/译文/" style="font-size: 16.67px;">译文</a>
     </div>
@@ -201,7 +201,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
         
@@ -238,7 +238,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Brav3heart<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>

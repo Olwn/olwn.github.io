@@ -12,7 +12,7 @@
 <meta property="og:url" content="http://yoursite.com/2017/06/27/创建和销毁对象/index.html">
 <meta property="og:site_name" content="Blog">
 <meta property="og:description" content="对于类的使用者，获取实例的方式通常是调用该类的构造方法。构造方法是一种特殊的方法，它的名字只能和类名相同。如果要允许不同创建方式，只能构建参数签名不同的构造方法。另外，每调用一次构造方法，就会有一个新的对象产生，这在某些场景下不适用，比如单(多)例模式。简单的说，构造方法的灵活性不够。当然，得到类实例不一定通过构造方法，普通的method同样可以返回对象。通常把静态的，返回类型和所属类相同的方法称">
-<meta property="og:updated_time" content="2017-07-15T15:54:40.000Z">
+<meta property="og:updated_time" content="2017-07-18T12:07:49.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="创建和销毁对象">
 <meta name="twitter:description" content="对于类的使用者，获取实例的方式通常是调用该类的构造方法。构造方法是一种特殊的方法，它的名字只能和类名相同。如果要允许不同创建方式，只能构建参数签名不同的构造方法。另外，每调用一次构造方法，就会有一个新的对象产生，这在某些场景下不适用，比如单(多)例模式。简单的说，构造方法的灵活性不够。当然，得到类实例不一定通过构造方法，普通的method同样可以返回对象。通常把静态的，返回类型和所属类相同的方法称">
@@ -57,9 +57,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -90,7 +90,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>对于类的使用者，获取实例的方式通常是调用该类的构造方法。构造方法是一种特殊的方法，它的名字只能和类名相同。如果要允许不同创建方式，只能构建参数签名不同的构造方法。另外，每调用一次构造方法，就会有一个新的对象产生，这在某些场景下不适用，比如单(多)例模式。简单的说，构造方法的灵活性不够。当然，得到类实例不一定通过构造方法，普通的method同样可以返回对象。通常把静态的，返回类型和所属类相同的方法称为factory method。它具有以下几点优势。</p>
+        <p>对于类的使用者，获取实例的方式通常是调用该类的构造方法。构造方法是一种特殊的方法，它的名字只能和类名相同。如果要允许不同创建方式，只能构建参数签名不同的构造方法。另外，每调用一次构造方法，就会有一个新的对象产生，这在某些场景下不适用，比如单(多)例模式。简单的说，构造方法的灵活性不够。当然，得到类实例不一定通过构造方法，普通的method同样可以返回对象。通常把静态的，返回类型和所属类相同的方法称为factory method。它具有以下几点优势。<br><a id="more"></a></p>
 <h4 id="有名称"><a href="#有名称" class="headerlink" title="有名称"></a>有名称</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyDouble</span> </span>&#123;</div><div class="line">  <span class="function"><span class="keyword">private</span> <span class="title">MyDouble</span><span class="params">()</span></span>;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> MyDouble <span class="title">valueOf</span><span class="params">(<span class="keyword">double</span> x)</span></span>;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> MyDouble <span class="title">parseFrom</span><span class="params">(String x)</span></span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <h4 id="重用对象"><a href="#重用对象" class="headerlink" title="重用对象"></a>重用对象</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Single</span> </span>&#123;</div><div class="line">  <span class="function"><span class="keyword">private</span> <span class="title">Single</span><span class="params">()</span></span>;</div><div class="line">  <span class="keyword">private</span> Single single;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Single <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (single == <span class="keyword">null</span>) &#123;</div><div class="line">      <span class="keyword">synchronized</span>(Single.class) &#123;</div><div class="line">        <span class="keyword">if</span> (single == <span class="keyword">null</span>) &#123;</div><div class="line">          single = <span class="keyword">new</span> Single();</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> single;</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> single;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <h4 id="灵活的返回子类"><a href="#灵活的返回子类" class="headerlink" title="灵活的返回子类"></a>灵活的返回子类</h4><p>API可以通过静态工厂方法返回对象，但不必把对象的类变成共有的。例如java.util.Collections提供了不可修改的集合、同步集合，所有返回对象的类都是非共有的。这种设计可以强制客户端通过接口来引用返回对象，而不是实现类，这是一种良好的习惯。接口引用的好处是可以修改实现而不影响现有的代码。</p>
@@ -108,7 +108,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/27/创建和销毁对象/" data-id="cj56ttrpg0004z8jgfraunsy0" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/06/27/创建和销毁对象/" data-id="cj59jbl430003e7jgl4yujvmr" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
@@ -120,7 +120,7 @@
 <nav id="article-nav">
   
     <a href="/2017/06/28/Builder构建器/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
+      <strong class="article-nav-caption">Récent</strong>
       <div class="article-nav-title">
         
           Builder构建器
@@ -130,7 +130,7 @@
   
   
     <a href="/2017/06/27/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
+      <strong class="article-nav-caption">Ancien</strong>
       <div class="article-nav-title">Hello World</div>
     </a>
   
@@ -148,7 +148,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">Mot-clés</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -158,7 +158,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
+    <h3 class="widget-title">Nuage de mot-clés</h3>
     <div class="widget tagcloud">
       <a href="/tags/Atomic/" style="font-size: 10px;">Atomic</a> <a href="/tags/Brain-Goetz/" style="font-size: 16.67px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 13.33px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 10px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/同步/" style="font-size: 13.33px;">同步</a> <a href="/tags/构造/" style="font-size: 13.33px;">构造</a> <a href="/tags/译文/" style="font-size: 16.67px;">译文</a>
     </div>
@@ -177,7 +177,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
         
@@ -214,7 +214,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Brav3heart<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>

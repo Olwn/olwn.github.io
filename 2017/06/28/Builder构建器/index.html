@@ -5,17 +5,17 @@
   
   <title>Builder构建器 | Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="使用过Python语言的同学们肯定知道，函数的参数有positional和keyword两种类型，第一种就是广泛存在于Java C++中的参数，按位置识别，第二种是用名字标识的。 12345# definedef func(a, b, c=&apos;X&apos;, d=&apos;Y&apos;)# invokefunc(&apos;a&apos;, &apos;b&apos;)func(&apos;a&apos;, &apos;b&apos;, d=&apos;x&apos;) 容易看出，keyword形式具有更强的表达力，可以">
+  <meta name="description" content="使用过Python语言的同学们肯定知道，函数的参数有positional和keyword两种类型，第一种就是广泛存在于Java C++中的参数，按位置识别，第二种是用名字标识的。">
 <meta name="keywords" content="Java,EffectiveJava,构造">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Builder构建器">
 <meta property="og:url" content="http://yoursite.com/2017/06/28/Builder构建器/index.html">
 <meta property="og:site_name" content="Blog">
-<meta property="og:description" content="使用过Python语言的同学们肯定知道，函数的参数有positional和keyword两种类型，第一种就是广泛存在于Java C++中的参数，按位置识别，第二种是用名字标识的。 12345# definedef func(a, b, c=&apos;X&apos;, d=&apos;Y&apos;)# invokefunc(&apos;a&apos;, &apos;b&apos;)func(&apos;a&apos;, &apos;b&apos;, d=&apos;x&apos;) 容易看出，keyword形式具有更强的表达力，可以">
-<meta property="og:updated_time" content="2017-07-15T15:54:56.000Z">
+<meta property="og:description" content="使用过Python语言的同学们肯定知道，函数的参数有positional和keyword两种类型，第一种就是广泛存在于Java C++中的参数，按位置识别，第二种是用名字标识的。">
+<meta property="og:updated_time" content="2017-07-18T12:09:11.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Builder构建器">
-<meta name="twitter:description" content="使用过Python语言的同学们肯定知道，函数的参数有positional和keyword两种类型，第一种就是广泛存在于Java C++中的参数，按位置识别，第二种是用名字标识的。 12345# definedef func(a, b, c=&apos;X&apos;, d=&apos;Y&apos;)# invokefunc(&apos;a&apos;, &apos;b&apos;)func(&apos;a&apos;, &apos;b&apos;, d=&apos;x&apos;) 容易看出，keyword形式具有更强的表达力，可以">
+<meta name="twitter:description" content="使用过Python语言的同学们肯定知道，函数的参数有positional和keyword两种类型，第一种就是广泛存在于Java C++中的参数，按位置识别，第二种是用名字标识的。">
   
     <link rel="alternate" href="/atom.xml" title="Blog" type="application/atom+xml">
   
@@ -57,9 +57,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -90,8 +90,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>使用过Python语言的同学们肯定知道，函数的参数有positional和keyword两种类型，第一种就是广泛存在于Java C++中的参数，按位置识别，第二种是用名字标识的。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># define</div><div class="line">def func(a, b, c='X', d='Y')</div><div class="line"># invoke</div><div class="line">func('a', 'b')</div><div class="line">func('a', 'b', d='x')</div></pre></td></tr></table></figure>
+        <p>使用过Python语言的同学们肯定知道，函数的参数有positional和keyword两种类型，第一种就是广泛存在于Java C++中的参数，按位置识别，第二种是用名字标识的。<br><a id="more"></a><br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"># define</div><div class="line">def func(a, b, c='X', d='Y')</div><div class="line"># invoke</div><div class="line">func('a', 'b')</div><div class="line">func('a', 'b', d='x')</div></pre></td></tr></table></figure></p>
 <p>容易看出，keyword形式具有更强的表达力，可以让使用者明白每个参数的意义，并且调用时也更加灵活。Java中参数不能有名字和默认值。那么如果构建有很多个成员变量的类时该如何设计呢？一种直观的方式是POJO</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Date</span> </span>&#123;</div><div class="line">  <span class="keyword">private</span> <span class="keyword">int</span> year;</div><div class="line">  <span class="keyword">private</span> <span class="keyword">int</span> month;</div><div class="line">  <span class="keyword">private</span> <span class="keyword">int</span> day;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">Date</span><span class="params">()</span> </span>&#123;</div><div class="line">  &#125;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">setYear</span><span class="params">(<span class="keyword">int</span> y)</span> </span>&#123; <span class="keyword">this</span>.year = y; &#125;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">setMonth</span><span class="params">(<span class="keyword">int</span> m)</span> </span>&#123; <span class="keyword">this</span>.month = m; &#125;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">setDay</span><span class="params">(<span class="keyword">int</span> d)</span> </span>&#123; <span class="keyword">this</span>.day = d; &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>这种方式是可行的，它使得构建实例变得非常直观，你不需要记住构造函数的每个位置是什么参数。它的问题是，不能很好的检查参数的有效性，特别是当成员变量有关联性的时候，比如无法上面的类无法阻止用户创建2月30号这样的无效日期。上一篇文章讲解的静态工厂方法可以解决这个问题，但是无法提供参数的语义信息。使用Builder辅助类是一个好的办法。</p>
@@ -100,7 +99,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/06/28/Builder构建器/" data-id="cj56ttrp10000z8jg2o8o3nva" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/06/28/Builder构建器/" data-id="cj59jbl3j0000e7jg5fb4np3k" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
@@ -112,7 +111,7 @@
 <nav id="article-nav">
   
     <a href="/2017/07/01/软引用/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
+      <strong class="article-nav-caption">Récent</strong>
       <div class="article-nav-title">
         
           软引用
@@ -122,7 +121,7 @@
   
   
     <a href="/2017/06/27/创建和销毁对象/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
+      <strong class="article-nav-caption">Ancien</strong>
       <div class="article-nav-title">创建和销毁对象</div>
     </a>
   
@@ -140,7 +139,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">Mot-clés</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -150,7 +149,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
+    <h3 class="widget-title">Nuage de mot-clés</h3>
     <div class="widget tagcloud">
       <a href="/tags/Atomic/" style="font-size: 10px;">Atomic</a> <a href="/tags/Brain-Goetz/" style="font-size: 16.67px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 13.33px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 10px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/同步/" style="font-size: 13.33px;">同步</a> <a href="/tags/构造/" style="font-size: 13.33px;">构造</a> <a href="/tags/译文/" style="font-size: 16.67px;">译文</a>
     </div>
@@ -169,7 +168,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
         
@@ -206,7 +205,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Brav3heart<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>

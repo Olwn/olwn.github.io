@@ -5,19 +5,19 @@
   
   <title>深入探讨原子性 | Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="原文Going Atomic 很多年前，多处理器系统是价格高昂的专用系统。现在(2004年)，多处理器系统变得便宜和常见，几乎每个主流的处理器都有内建的多线程支持，有的甚至包含了上百个处理器核心。 为了充分利用多处理器系统，应用程序应该使用多线程。但是，任何写过并发程序的人都知道，简单的把工作分给多个线程并不足以达到好的硬件利用率，必须确保线程把大部分时间花在了运行实际任务上而不是等待锁。 问题：">
+  <meta name="description" content="原文Going Atomic 很多年前，多处理器系统是价格高昂的专用系统。现在(2004年)，多处理器系统变得便宜和常见，几乎每个主流的处理器都有内建的多线程支持，有的甚至包含了上百个处理器核心。 为了充分利用多处理器系统，应用程序应该使用多线程。但是，任何写过并发程序的人都知道，简单的把工作分给多个线程并不足以达到好的硬件利用率，必须确保线程把大部分时间花在了运行实际任务上而不是等待锁。">
 <meta name="keywords" content="Java,译文,Brain Goetz,同步,Atomic">
 <meta property="og:type" content="article">
 <meta property="og:title" content="深入探讨原子性">
 <meta property="og:url" content="http://yoursite.com/2017/07/16/深入探讨原子性/index.html">
 <meta property="og:site_name" content="Blog">
-<meta property="og:description" content="原文Going Atomic 很多年前，多处理器系统是价格高昂的专用系统。现在(2004年)，多处理器系统变得便宜和常见，几乎每个主流的处理器都有内建的多线程支持，有的甚至包含了上百个处理器核心。 为了充分利用多处理器系统，应用程序应该使用多线程。但是，任何写过并发程序的人都知道，简单的把工作分给多个线程并不足以达到好的硬件利用率，必须确保线程把大部分时间花在了运行实际任务上而不是等待锁。 问题：">
+<meta property="og:description" content="原文Going Atomic 很多年前，多处理器系统是价格高昂的专用系统。现在(2004年)，多处理器系统变得便宜和常见，几乎每个主流的处理器都有内建的多线程支持，有的甚至包含了上百个处理器核心。 为了充分利用多处理器系统，应用程序应该使用多线程。但是，任何写过并发程序的人都知道，简单的把工作分给多个线程并不足以达到好的硬件利用率，必须确保线程把大部分时间花在了运行实际任务上而不是等待锁。">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp11234/RngThroughput.gif">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp11234/RngThroughputUni.gif">
-<meta property="og:updated_time" content="2017-07-16T09:07:26.000Z">
+<meta property="og:updated_time" content="2017-07-18T12:09:24.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入探讨原子性">
-<meta name="twitter:description" content="原文Going Atomic 很多年前，多处理器系统是价格高昂的专用系统。现在(2004年)，多处理器系统变得便宜和常见，几乎每个主流的处理器都有内建的多线程支持，有的甚至包含了上百个处理器核心。 为了充分利用多处理器系统，应用程序应该使用多线程。但是，任何写过并发程序的人都知道，简单的把工作分给多个线程并不足以达到好的硬件利用率，必须确保线程把大部分时间花在了运行实际任务上而不是等待锁。 问题：">
+<meta name="twitter:description" content="原文Going Atomic 很多年前，多处理器系统是价格高昂的专用系统。现在(2004年)，多处理器系统变得便宜和常见，几乎每个主流的处理器都有内建的多线程支持，有的甚至包含了上百个处理器核心。 为了充分利用多处理器系统，应用程序应该使用多线程。但是，任何写过并发程序的人都知道，简单的把工作分给多个线程并不足以达到好的硬件利用率，必须确保线程把大部分时间花在了运行实际任务上而不是等待锁。">
 <meta name="twitter:image" content="https://www.ibm.com/developerworks/java/library/j-jtp11234/RngThroughput.gif">
   
     <link rel="alternate" href="/atom.xml" title="Blog" type="application/atom+xml">
@@ -60,9 +60,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
@@ -95,7 +95,7 @@
       
         <p>原文<a href="https://www.ibm.com/developerworks/java/library/j-jtp11234/index.html?ca=drs-" target="_blank" rel="external">Going Atomic</a></p>
 <p>很多年前，多处理器系统是价格高昂的专用系统。现在(2004年)，多处理器系统变得便宜和常见，几乎每个主流的处理器都有内建的多线程支持，有的甚至包含了上百个处理器核心。</p>
-<p>为了充分利用多处理器系统，应用程序应该使用多线程。但是，任何写过并发程序的人都知道，简单的把工作分给多个线程并不足以达到好的硬件利用率，必须确保线程把大部分时间花在了运行实际任务上而不是等待锁。</p>
+<p>为了充分利用多处理器系统，应用程序应该使用多线程。但是，任何写过并发程序的人都知道，简单的把工作分给多个线程并不足以达到好的硬件利用率，必须确保线程把大部分时间花在了运行实际任务上而不是等待锁。<br><a id="more"></a></p>
 <h2 id="问题：线程协调"><a href="#问题：线程协调" class="headerlink" title="问题：线程协调"></a>问题：线程协调</h2><p>任务并行化几乎都会涉及到线程协调。考虑一个线程池，任务的执行是相互独立的。如果池中的线程同时从一个队列中取出和添加元素，那么这些操作必须是线程安全的，需要协调对链表链表节点的访问。就是这些协调过程，会导致各种各样的问题。</p>
 <h4 id="标准解决：锁"><a href="#标准解决：锁" class="headerlink" title="标准解决：锁"></a>标准解决：锁</h4><p>Java的针对共享变量的协调访问的传统解决方法是使用同步，保证访问是在持有锁的前提下进行的。有了同步，可以确保持有锁的线程是独占性的访问变量的，并且对变量的修改会立即对其他线程可见。这种方法的不好的一面是，当多个线程激烈竞争时，吞吐量可能会严重下降，因为同步的成本太高了。（冲突少的情况下，同步成本很低。）</p>
 <p>基于锁的算法的另一个问题是，如果一个持有锁的线程挂起了，锁不会被释放，其他线程没有机会获取锁。</p>
@@ -138,7 +138,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2017/07/16/深入探讨原子性/" data-id="cj56ttrpl0007z8jgutgoyuu1" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2017/07/16/深入探讨原子性/" data-id="cj59jbl470005e7jg3lhd3lz6" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -150,7 +150,7 @@
 <nav id="article-nav">
   
     <a href="/2017/07/16/Java动态编译技术/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
+      <strong class="article-nav-caption">Récent</strong>
       <div class="article-nav-title">
         
           Java动态编译技术
@@ -160,7 +160,7 @@
   
   
     <a href="/2017/07/05/同步锁/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
+      <strong class="article-nav-caption">Ancien</strong>
       <div class="article-nav-title">同步锁</div>
     </a>
   
@@ -178,7 +178,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">Mot-clés</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -188,7 +188,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
+    <h3 class="widget-title">Nuage de mot-clés</h3>
     <div class="widget tagcloud">
       <a href="/tags/Atomic/" style="font-size: 10px;">Atomic</a> <a href="/tags/Brain-Goetz/" style="font-size: 16.67px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 13.33px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 10px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/同步/" style="font-size: 13.33px;">同步</a> <a href="/tags/构造/" style="font-size: 13.33px;">构造</a> <a href="/tags/译文/" style="font-size: 16.67px;">译文</a>
     </div>
@@ -207,7 +207,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
         
@@ -244,7 +244,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Brav3heart<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
