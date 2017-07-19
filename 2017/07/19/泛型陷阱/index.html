@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>泛型陷阱 | Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="原文Generics gotchas 泛型表面上很像C++模板，不论是语法还是主要用途(容器类)。但实际上，Java的泛型特性几乎是在编译器中实现的，包括进行类型检查、类型推断，然后生成普通的 不存在泛型的字节码。这种实现被称为类型擦除(erasure)，具有相当经验的效果，但有时也让人困惑。泛型使得Java朝着类型安全又迈了一大步，不过学习过程令人头疼。">
+<meta name="keywords" content="Java,译文,Brain Goetz,泛型">
+<meta property="og:type" content="article">
+<meta property="og:title" content="泛型陷阱">
+<meta property="og:url" content="https://olwn.github.io/2017/07/19/泛型陷阱/index.html">
+<meta property="og:site_name" content="Blog">
+<meta property="og:description" content="原文Generics gotchas 泛型表面上很像C++模板，不论是语法还是主要用途(容器类)。但实际上，Java的泛型特性几乎是在编译器中实现的，包括进行类型检查、类型推断，然后生成普通的 不存在泛型的字节码。这种实现被称为类型擦除(erasure)，具有相当经验的效果，但有时也让人困惑。泛型使得Java朝着类型安全又迈了一大步，不过学习过程令人头疼。">
+<meta property="og:updated_time" content="2017-07-19T15:41:51.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="泛型陷阱">
+<meta name="twitter:description" content="原文Generics gotchas 泛型表面上很像C++模板，不论是语法还是主要用途(容器类)。但实际上，Java的泛型特性几乎是在编译器中实现的，包括进行类型检查、类型推断，然后生成普通的 不存在泛型的字节码。这种实现被称为类型擦除(erasure)，具有相当经验的效果，但有时也让人困惑。泛型使得Java朝着类型安全又迈了一大步，不过学习过程令人头疼。">
+  
+    <link rel="alternate" href="/atom.xml" title="Blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Stay hungry, Stay foolish.</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-泛型陷阱" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/19/泛型陷阱/" class="article-date">
+  <time datetime="2017-07-19T13:48:50.000Z" itemprop="datePublished">2017-07-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      泛型陷阱
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://www.ibm.com/developerworks/java/library/j-jtp01255/index.html?ca=drs-" target="_blank" rel="external">原文Generics gotchas</a></p>
+<p>泛型表面上很像C++模板，不论是语法还是主要用途(容器类)。但实际上，Java的泛型特性几乎是在编译器中实现的，包括进行类型检查、类型推断，然后生成普通的 不存在泛型的字节码。这种实现被称为类型擦除(erasure)，具有相当经验的效果，但有时也让人困惑。泛型使得Java朝着类型安全又迈了一大步，不过学习过程令人头疼。<br><a id="more"></a><br><em>这篇文章会假设你已经对JDK5.0发布的泛型已经比较熟悉了</em></p>
+<h2 id="泛型不是协变-covariant-的"><a href="#泛型不是协变-covariant-的" class="headerlink" title="泛型不是协变(covariant)的"></a>泛型不是协变(covariant)的</h2><p>虽然你可能觉得集合是数组的抽象，但是某些数组的特性并不适用于集合。Java数组是协变的，<code>Integer</code>是<code>Number</code>的子类，所以<code>Integer[]</code>是<code>Number[]</code>的子类，你可以随意的将需要<code>Integer[]</code>对象赋给<code>Number[]</code>引用。你可能会认为这对于集合也成立，<code>`List&lt;Integer&gt;</code>是<code>List&lt;Number&gt;</code>的子类，可以把<code>List&lt;Integer&gt;</code>对象传给<code>List&lt;Number&gt;</code>引用。遗憾的是，情况不是这样的。</p>
+<p>从下面的例子，你可以看到泛型不满足协变规则是有道理的，因为那会破坏类型安全。想象，如果你可以把<code>List&lt;Integer&gt;</code>对象赋给<code>List&lt;Number&gt;</code>，然后你就可以把非<code>Integer</code>元素放进一个<code>List&lt;Integer&gt;</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">List&lt;Integer&gt; li = <span class="keyword">new</span> ArrayList&lt;Integer&gt;();</div><div class="line">List&lt;Number&gt; ln = li; <span class="comment">// illegal</span></div><div class="line">ln.add(<span class="keyword">new</span> Float(<span class="number">3.1415</span>));</div></pre></td></tr></table></figure>
+<p>因为<code>ln</code>是<code>List&lt;Number&gt;</code>，添加一个<code>Float</code>元素十分合理。但是如果<code>ln</code>能够合法的指向<code>li</code>，类型安全就被打破了，<code>Integer</code>列表混进了<code>Float</code>元素。所以泛型一定不能是协变的。</p>
+<h4 id="协变的其他缺点"><a href="#协变的其他缺点" class="headerlink" title="协变的其他缺点"></a>协变的其他缺点</h4><p>数组可以协变而泛型不能，使得你不能实例化一个泛型数组(<code>new List&lt;String&gt;[3]</code>是非法的)，除非类型参数是无限制的自由类型<code>?</code>（<code>new List&lt;?&gt;[3]</code>是合法的）。让我们来看看如果不这样做会导致什么后果。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">List&lt;String&gt;[] lsa = <span class="keyword">new</span> List&lt;String&gt;[<span class="number">10</span>]; <span class="comment">// illegal</span></div><div class="line">Object[] oa = lsa;  <span class="comment">// OK because List&lt;String&gt; is a subtype of Object</span></div><div class="line">List&lt;Integer&gt; li = <span class="keyword">new</span> ArrayList&lt;Integer&gt;();</div><div class="line">li.add(<span class="keyword">new</span> Integer(<span class="number">3</span>));</div><div class="line">oa[<span class="number">0</span>] = li; </div><div class="line">String s = lsa[<span class="number">0</span>].get(<span class="number">0</span>);</div></pre></td></tr></table></figure>
+<p>最后一行会抛出<code>ClassCastException</code>异常，因为你尝试将一个<code>List&lt;Integer&gt;</code>转换为<code>String</code>类型。由于数组协变会破坏泛型安全，所以不允许实例化泛型数组。</p>
+<h2 id="构造延迟"><a href="#构造延迟" class="headerlink" title="构造延迟"></a>构造延迟</h2><p>由于类型擦除机制，<code>List&lt;Integer&gt;</code>和<code>List&lt;String&gt;</code>是同一个类，编译器在编译<code>List&lt;V&gt;</code>时只会生成一个<code>List</code>代码（C++不是这样的）。这样的话，编译器不知道<code>V</code>是什么，你也不能使用<code>V</code>做任何操作。</p>
+<p>因为运行环境不能区分<code>List&lt;String&gt;</code>和<code>List&lt;Integer&gt;</code>，构造泛型变量会面临困难。因为类型信息的缺失，泛型类想实现<a href="http://www.javapractices.com/topic/TopicAction.do?Id=15" target="_blank" rel="external">保护性拷贝</a>会遇到问题。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span>&lt;<span class="title">T</span>&gt; </span>&#123; </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(T param)</span> </span>&#123; ... &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>假设<code>doSomething()</code>想保护性拷贝<code>param</code>，你几乎没有选择而想采用下面的实现。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(T param)</span> </span>&#123; </div><div class="line">  T copy = <span class="keyword">new</span> T(param);  <span class="comment">// illegal</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>但是你不能通过泛型访问构造函数，因为编译时不知道<code>T</code>是哪个类，不知道它的构造函数是怎样的，甚至可能都没有构造函数。也不存在一种方式，给<code>T</code>添加具有某个构造函数的限制，所以通过泛型访问构造函数是不可行的。</p>
+<p>不是还有<code>clone()</code>吗？我们来看看把<code>T</code>定义为<code>Cloneable</code>的如何。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span>&lt;<span class="title">T</span> <span class="keyword">extends</span> <span class="title">Cloneable</span>&gt; </span>&#123; </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(T param)</span> </span>&#123;</div><div class="line">    T copy = (T) param.clone();  <span class="comment">// illegal </span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>遗憾的是，你不能调用<code>clone()</code>。为什么？因为<code>clone()</code>在<code>Object</code>中是被声明为<code>protected</code>的，为了调用<code>clone()</code>，你必须使用一个重写<code>clone()</code>为<code>public</code>的类的引用。但是<code>T</code>是未知类型。</p>
+<h4 id="构造通配-wildcard-引用"><a href="#构造通配-wildcard-引用" class="headerlink" title="构造通配(wildcard)引用"></a>构造通配(wildcard)引用</h4><p>好吧，我们不能拷贝一个编译时类型完全未知的对象。wildcard类型呢？假如想拷贝<code>Set&lt;?&gt;</code>对象，你知道<code>Set</code>有一个拷贝构造函数，你可能听说过不知道类型的时候，使用<code>Set&lt;?&gt;</code>比原始的<code>Set</code>好，因为前者带来的<code>uncheckd conversion warning</code>更少。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> </span>&#123;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(Set&lt;?&gt; set)</span> </span>&#123;</div><div class="line">    Set&lt;?&gt; copy = <span class="keyword">new</span> HashSet&lt;?&gt;(set);  <span class="comment">// illegal</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>遗憾的是，你不能用一个通配类型作为参数调用一个泛型构造器，即便你知道这样的构造器存在。不过，下面的实现是可以的</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> </span>&#123;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doSomething</span><span class="params">(Set&lt;?&gt; set)</span> </span>&#123;</div><div class="line">    Set&lt;?&gt; copy = <span class="keyword">new</span> HashSet&lt;Object&gt;(set);  </div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这样的构造方式不是最直接的，但是是类型安全的。</p>
+<h4 id="构造数组"><a href="#构造数组" class="headerlink" title="构造数组"></a>构造数组</h4><p>你会如何实现<code>ArrayList&lt;V&gt;</code>？<code>ArrayList</code>类应该管理一个<code>V</code>类型数组，所以你可能想这样实现构造函数。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ArrayList</span>&lt;<span class="title">V</span>&gt; </span>&#123;</div><div class="line">  <span class="keyword">private</span> V[] backingArray;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">()</span> </span>&#123;</div><div class="line">    backingArray = <span class="keyword">new</span> V[DEFAULT_SIZE]; <span class="comment">// illegal</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>但是这份代码不能通过编译，不能够实例化一个参数类型数组。</p>
+<p><code>Collections</code>类使用了一种丑陋的技巧绕开这个问题，这会产生一个类型转换警告。<code>ArrayList</code>的实现大致是下面这样的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ArrayList</span>&lt;<span class="title">V</span>&gt; </span>&#123;</div><div class="line">  <span class="keyword">private</span> V[] backingArray;</div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">()</span> </span>&#123;</div><div class="line">    backingArray = (V[]) <span class="keyword">new</span> Object[DEFAULT_SIZE]; </div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>为什么这份代码不会产生<code>ArrayStoreException</code>异常？毕竟，你不能把一个<code>Object[]</code>赋给<code>String[]</code>引用。原因在于泛型是基于擦除机制的，<code>backingArray</code>的实际类型是<code>Object[]</code>。这意味着<code>ArrayList</code>实际上维护的是一个<code>Object</code>数组，只是编译器做了额外的类型检查，保证它只有<code>V</code>类型的元素插入。所以，这种实现可以工作，但是很丑，不值得效仿。</p>
+<p>另一种实现是直接声明<code>backingArray</code>为<code>Object[]</code>，在需要的地方转换为<code>V[]</code>。虽然还是会出现类型转换警告，但是它使得前面的隐含假设变得清楚了。</p>
+<h4 id="没有采用的方法"><a href="#没有采用的方法" class="headerlink" title="没有采用的方法"></a>没有采用的方法</h4><p>最好的方法应该是传入一个类对象(<code>Foo.class</code>)给构造函数，这样类型就是已知的信息了。没有这样做是为了保持后向兼容性，因为这种实现会导致新的集合类和以前的代码不兼容。</p>
+<p>这是<code>ArrayList</code>按照这种思路的可能的实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ArrayList</span>&lt;<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">List</span>&lt;<span class="title">V</span>&gt; </span>&#123;</div><div class="line">  <span class="keyword">private</span> V[] backingArray;</div><div class="line">  <span class="keyword">private</span> Class&lt;V&gt; elementType;</div><div class="line"> </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">ArrayList</span><span class="params">(Class&lt;V&gt; elementType)</span> </span>&#123;</div><div class="line">    <span class="keyword">this</span>.elementType = elementType;</div><div class="line">    backingArray = (V[]) Array.newInstance(elementType, DEFAULT_LENGTH);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://olwn.github.io/2017/07/19/泛型陷阱/" data-id="cj5b6eq8y000227jgl6565xdn" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/泛型/">泛型</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/07/17/Java动态编译技术/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ancien</strong>
+      <div class="article-nav-title">Java动态编译技术</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Mot-clés</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/泛型/">泛型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Atomic/" style="font-size: 10px;">Atomic</a> <a href="/tags/Brain-Goetz/" style="font-size: 16.67px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 13.33px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 10px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/同步/" style="font-size: 13.33px;">同步</a> <a href="/tags/构造/" style="font-size: 13.33px;">构造</a> <a href="/tags/泛型/" style="font-size: 10px;">泛型</a> <a href="/tags/译文/" style="font-size: 16.67px;">译文</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Articles récents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/07/19/泛型陷阱/">泛型陷阱</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/17/Java动态编译技术/">Java动态编译技术</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/16/深入探讨原子性/">深入探讨原子性</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/05/同步锁/">同步锁</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/01/软引用/">软引用</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Brav3heart<br>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
