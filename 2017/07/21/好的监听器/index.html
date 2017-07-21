@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>好的监听器 | Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Be a good (event) listener Swing框架大量使用了观察者模式(也成为发布-订阅模式)，主要用在事件监听器上。Swing的组件在和用户交互时会触发事件；数据发生改变时，数据模型类也会触发事件。观察者模式的使用，使得控制器和模型分离，模型和视图分离，简化了GUI应用的开发。 设计模式经典书籍 Gang of Four 把观察者模式定义为 “对象之间的某种一对多依赖，当对象的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="好的监听器">
+<meta property="og:url" content="https://olwn.github.io/2017/07/21/好的监听器/index.html">
+<meta property="og:site_name" content="Blog">
+<meta property="og:description" content="Be a good (event) listener Swing框架大量使用了观察者模式(也成为发布-订阅模式)，主要用在事件监听器上。Swing的组件在和用户交互时会触发事件；数据发生改变时，数据模型类也会触发事件。观察者模式的使用，使得控制器和模型分离，模型和视图分离，简化了GUI应用的开发。 设计模式经典书籍 Gang of Four 把观察者模式定义为 “对象之间的某种一对多依赖，当对象的">
+<meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp07265/figure1.gif">
+<meta property="og:updated_time" content="2017-07-21T15:24:37.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="好的监听器">
+<meta name="twitter:description" content="Be a good (event) listener Swing框架大量使用了观察者模式(也成为发布-订阅模式)，主要用在事件监听器上。Swing的组件在和用户交互时会触发事件；数据发生改变时，数据模型类也会触发事件。观察者模式的使用，使得控制器和模型分离，模型和视图分离，简化了GUI应用的开发。 设计模式经典书籍 Gang of Four 把观察者模式定义为 “对象之间的某种一对多依赖，当对象的">
+<meta name="twitter:image" content="https://www.ibm.com/developerworks/java/library/j-jtp07265/figure1.gif">
+  
+    <link rel="alternate" href="/atom.xml" title="Blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-102822425-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Stay hungry, Stay foolish.</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-好的监听器" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/21/好的监听器/" class="article-date">
+  <time datetime="2017-07-21T14:00:32.000Z" itemprop="datePublished">2017-07-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      好的监听器
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://www.ibm.com/developerworks/java/library/j-jtp07265/index.html?ca=drs-#artrelatedtopics" target="_blank" rel="external">Be a good (event) listener</a></p>
+<p>Swing框架大量使用了观察者模式(也成为发布-订阅模式)，主要用在事件监听器上。Swing的组件在和用户交互时会触发事件；数据发生改变时，数据模型类也会触发事件。观察者模式的使用，使得控制器和模型分离，模型和视图分离，简化了GUI应用的开发。</p>
+<p>设计模式经典书籍 <em>Gang of Four</em> 把观察者模式定义为 “对象之间的某种一对多依赖，当对象的状态变动时，所有的依赖都会自动更新”。观察者模式松解了组件的耦合；组件的状态可以自动保持同步，不需要直接了解其他组件的细节，有利于组件重用。</p>
+<p>AWT和Swing组件，比如JButton和JTable，使用观察者模式来解耦合GUI事件的语义和生成。类似的，Swing模型类，比如TableModel，TreeModel，使用观察者姐耦合数据模型和视图生成，这可以实现同一份数据 多份不同的视图。Swing定义了层次化的事件和事件监听器；能生成事件的组件提供了注册和注销监听器的方法，比如<code>JButton</code>的<code>addXXListener</code>、<code>removeXXListener</code>。这些类自己决定什么时候触发事件，一旦触发，注册的监听器会自动调用。</p>
+<p>为了支持监听器，一个组件对象需要具备这些功能：维护一个监听器列表，提供注册和注销的方法，在事件发生时调用合适的监听器。监听器非常易于使用和维护，但是有一些陷阱需要注意。</p>
+<h2 id="线程安全问题"><a href="#线程安全问题" class="headerlink" title="线程安全问题"></a>线程安全问题</h2><p>监听器可能会频繁的被不同的线程调用到。为了支持从不同的线程注册监听器，存储和管理监听器的机制必须是线程安全的。Sun给出的实例代码使用<code>Vector</code>存续监听器列表，可以部分解决这个问题，但还不够。当一个事件被触发，组件会遍历监听器列表，依次调用它们，这里会存在并发修改的风险，遍历过程中可能另一个线程会添加或删除监听器。</p>
+<h4 id="管理监听器列表"><a href="#管理监听器列表" class="headerlink" title="管理监听器列表"></a>管理监听器列表</h4><p>假设你使用<code>Vector&lt;Listener&gt;</code>保存监听器。<code>Vecotr</code>类是线程安全的，意味着无需额外同步就可以安全的调用，无需担心数据损坏的风险，但是遍历一个集合涉及到检查 “check and act” 的操作序列，操作过程中集合被修改可能会导致问题。你很可能会使用下面的方式遍历<code>Vector</code>中的监听器</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 不安全的遍历方式</span></div><div class="line">Vector&lt;Listener&gt; v;</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;v.size(); i++)</div><div class="line">  v.get(i).eventHappened(event);</div></pre></td></tr></table></figure>
+<p>如果调用<code>Vector.size()</code>之后，另一个线程删除了一个监听器，现在<code>get</code>方法会返回<code>null</code>，然后上面的代码会抛出一个<code>NullPointerException</code>。这是一个 “check and act” 的例子，但是由于存在并发修改，check时的状态已经被变更了。</p>
+<p><img src="https://www.ibm.com/developerworks/java/library/j-jtp07265/figure1.gif" alt="图1 并发的迭代和修改，导致意外错误"></p>
+<p>一个解决办法是对迭代过程加锁；另一个方法是事件触发时，先复制容器，在新容器上遍历。两种方法都有性能损耗，第一种，只有一个线程能够加锁访问；第二种涉及到创建临时对象和复制列表的成本。</p>
+<p>如果你使用一个迭代器遍历监听器列表，你还是会碰到一样的问题；不过不是<code>NullPointerException</code>异常，而是得到<code>ConcurrentModificationException</code>异常，如果迭代器检测到集合类被修改了。同样的，这可以通过对迭代过程额外加锁解决。</p>
+<p><code>java.util.concurrent</code>包中的<code>CopyOnWriteArrayList</code>类，可以帮助阻止这个问题。它是线程安全的，但是它的迭代器不会抛出<code>ConcurrentModificationException</code>异常，不需要额外加锁。这是通过每次修改时复制再新建实现的，所以修改列表不会影响到正在遍历列表的线程。虽然这听起来效率不好，但记住观察者模式中，每个组件只有很少量的监听器，添加和移除的时候远远少于遍历。所以更快的遍历速度补偿了稍微耗时的修改，并且提供了更好的并发性能，多个线程可以同时遍历一个列表。</p>
+<h4 id="初始化的安全性风险"><a href="#初始化的安全性风险" class="headerlink" title="初始化的安全性风险"></a>初始化的安全性风险</h4><p>未完明天续…</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://olwn.github.io/2017/07/21/好的监听器/" data-id="cj5e0ogba000z0qjg8yogx3mw" class="article-share-link">Delen</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/07/19/泛型陷阱/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">泛型陷阱</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/泛型/">泛型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Atomic/" style="font-size: 10px;">Atomic</a> <a href="/tags/Brain-Goetz/" style="font-size: 16.67px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 13.33px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 10px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/同步/" style="font-size: 13.33px;">同步</a> <a href="/tags/构造/" style="font-size: 13.33px;">构造</a> <a href="/tags/泛型/" style="font-size: 10px;">泛型</a> <a href="/tags/译文/" style="font-size: 16.67px;">译文</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/07/21/好的监听器/">好的监听器</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/19/泛型陷阱/">泛型陷阱</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/17/Java动态编译技术/">Java动态编译技术</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/16/深入探讨原子性/">深入探讨原子性</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/05/同步锁/">同步锁</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Brav3heart<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
