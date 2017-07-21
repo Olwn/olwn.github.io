@@ -70,7 +70,7 @@ ga('send', 'pageview');
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
@@ -105,23 +105,16 @@ ga('send', 'pageview');
       
         <p><a href="https://www.ibm.com/developerworks/java/library/j-jtp07265/index.html?ca=drs-#artrelatedtopics" target="_blank" rel="external">Be a good (event) listener</a></p>
 <p>Swing框架大量使用了观察者模式(也成为发布-订阅模式)，主要用在事件监听器上。Swing的组件在和用户交互时会触发事件；数据发生改变时，数据模型类也会触发事件。观察者模式的使用，使得控制器和模型分离，模型和视图分离，简化了GUI应用的开发。</p>
-<p>设计模式经典书籍 <em>Gang of Four</em> 把观察者模式定义为 “对象之间的某种一对多依赖，当对象的状态变动时，所有的依赖都会自动更新”。观察者模式松解了组件的耦合；组件的状态可以自动保持同步，不需要直接了解其他组件的细节，有利于组件重用。</p>
-<p>AWT和Swing组件，比如JButton和JTable，使用观察者模式来解耦合GUI事件的语义和生成。类似的，Swing模型类，比如TableModel，TreeModel，使用观察者姐耦合数据模型和视图生成，这可以实现同一份数据 多份不同的视图。Swing定义了层次化的事件和事件监听器；能生成事件的组件提供了注册和注销监听器的方法，比如<code>JButton</code>的<code>addXXListener</code>、<code>removeXXListener</code>。这些类自己决定什么时候触发事件，一旦触发，注册的监听器会自动调用。</p>
-<p>为了支持监听器，一个组件对象需要具备这些功能：维护一个监听器列表，提供注册和注销的方法，在事件发生时调用合适的监听器。监听器非常易于使用和维护，但是有一些陷阱需要注意。</p>
-<h2 id="线程安全问题"><a href="#线程安全问题" class="headerlink" title="线程安全问题"></a>线程安全问题</h2><p>监听器可能会频繁的被不同的线程调用到。为了支持从不同的线程注册监听器，存储和管理监听器的机制必须是线程安全的。Sun给出的实例代码使用<code>Vector</code>存续监听器列表，可以部分解决这个问题，但还不够。当一个事件被触发，组件会遍历监听器列表，依次调用它们，这里会存在并发修改的风险，遍历过程中可能另一个线程会添加或删除监听器。</p>
-<h4 id="管理监听器列表"><a href="#管理监听器列表" class="headerlink" title="管理监听器列表"></a>管理监听器列表</h4><p>假设你使用<code>Vector&lt;Listener&gt;</code>保存监听器。<code>Vecotr</code>类是线程安全的，意味着无需额外同步就可以安全的调用，无需担心数据损坏的风险，但是遍历一个集合涉及到检查 “check and act” 的操作序列，操作过程中集合被修改可能会导致问题。你很可能会使用下面的方式遍历<code>Vector</code>中的监听器</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 不安全的遍历方式</span></div><div class="line">Vector&lt;Listener&gt; v;</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;v.size(); i++)</div><div class="line">  v.get(i).eventHappened(event);</div></pre></td></tr></table></figure>
-<p>如果调用<code>Vector.size()</code>之后，另一个线程删除了一个监听器，现在<code>get</code>方法会返回<code>null</code>，然后上面的代码会抛出一个<code>NullPointerException</code>。这是一个 “check and act” 的例子，但是由于存在并发修改，check时的状态已经被变更了。</p>
-<p><img src="https://www.ibm.com/developerworks/java/library/j-jtp07265/figure1.gif" alt="图1 并发的迭代和修改，导致意外错误"></p>
-<p>一个解决办法是对迭代过程加锁；另一个方法是事件触发时，先复制容器，在新容器上遍历。两种方法都有性能损耗，第一种，只有一个线程能够加锁访问；第二种涉及到创建临时对象和复制列表的成本。</p>
-<p>如果你使用一个迭代器遍历监听器列表，你还是会碰到一样的问题；不过不是<code>NullPointerException</code>异常，而是得到<code>ConcurrentModificationException</code>异常，如果迭代器检测到集合类被修改了。同样的，这可以通过对迭代过程额外加锁解决。</p>
-<p><code>java.util.concurrent</code>包中的<code>CopyOnWriteArrayList</code>类，可以帮助阻止这个问题。它是线程安全的，但是它的迭代器不会抛出<code>ConcurrentModificationException</code>异常，不需要额外加锁。这是通过每次修改时复制再新建实现的，所以修改列表不会影响到正在遍历列表的线程。虽然这听起来效率不好，但记住观察者模式中，每个组件只有很少量的监听器，添加和移除的时候远远少于遍历。所以更快的遍历速度补偿了稍微耗时的修改，并且提供了更好的并发性能，多个线程可以同时遍历一个列表。</p>
-<h4 id="初始化的安全性风险"><a href="#初始化的安全性风险" class="headerlink" title="初始化的安全性风险"></a>初始化的安全性风险</h4><p>未完明天续…</p>
-
+<p>设计模式经典书籍 <em>Gang of Four</em> 把观察者模式定义为 “对象之间的某种一对多依赖，当对象的状态变动时，所有的依赖都会自动更新”。观察者模式松解了组件的耦合；组件的状态可以自动保持同步，不需要直接了解其他组件的细节，有利于组件重用。<br>
+        
+          <p class="article-more-link">
+            <a href="/2017/07/21/好的监听器/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/21/好的监听器/" data-id="cj5e0ogba000z0qjg8yogx3mw" class="article-share-link">Delen</a>
+      <a data-url="https://olwn.github.io/2017/07/21/好的监听器/" data-id="cj5e0qak500041njguk1gtutz" class="article-share-link">Share</a>
       
       
     </footer>
@@ -163,7 +156,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/19/泛型陷阱/" data-id="cj5e0ogbf00110qjgfl7692wh" class="article-share-link">Delen</a>
+      <a data-url="https://olwn.github.io/2017/07/19/泛型陷阱/" data-id="cj5e0qak800051njg2kat0zcz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/泛型/">泛型</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -207,7 +200,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/17/Java动态编译技术/" data-id="cj5e0og8400030qjgc71hyf17" class="article-share-link">Delen</a>
+      <a data-url="https://olwn.github.io/2017/07/17/Java动态编译技术/" data-id="cj5e0qakc00081njg3hux7zhj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JVM/">JVM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -252,7 +245,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/16/深入探讨原子性/" data-id="cj5e0og8q00050qjglwkemu5f" class="article-share-link">Delen</a>
+      <a data-url="https://olwn.github.io/2017/07/16/深入探讨原子性/" data-id="cj5e0qak900071njgxqby3121" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -296,7 +289,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/05/同步锁/" data-id="cj5e0ogb4000y0qjgormhrmqf" class="article-share-link">Delen</a>
+      <a data-url="https://olwn.github.io/2017/07/05/同步锁/" data-id="cj5e0qajw00011njgub9k8mu6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -340,7 +333,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/01/软引用/" data-id="cj5e0ogbh00130qjg7rl6lhs9" class="article-share-link">Delen</a>
+      <a data-url="https://olwn.github.io/2017/07/01/软引用/" data-id="cj5e0qakh000a1njg3t70xx8z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GC/">GC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -383,7 +376,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/06/28/Builder构建器/" data-id="cj5e0og7h00000qjgojf5u9ly" class="article-share-link">Delen</a>
+      <a data-url="https://olwn.github.io/2017/06/28/Builder构建器/" data-id="cj5e0qajs00001njgr99yvhzs" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
@@ -426,7 +419,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/06/27/创建和销毁对象/" data-id="cj5e0og7s00010qjgcsgm433c" class="article-share-link">Delen</a>
+      <a data-url="https://olwn.github.io/2017/06/27/创建和销毁对象/" data-id="cj5e0qakk000b1njgt1gw5e68" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
@@ -469,7 +462,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/06/27/hello-world/" data-id="cj5e0og8900040qjghmhmotqn" class="article-share-link">Delen</a>
+      <a data-url="https://olwn.github.io/2017/06/27/hello-world/" data-id="cj5e0qak300031njglnnzuniw" class="article-share-link">Share</a>
       
       
     </footer>
@@ -489,7 +482,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Labels</h3>
+    <h3 class="widget-title">Tags</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/泛型/">泛型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -508,7 +501,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archieven</h3>
+    <h3 class="widget-title">Archives</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
     </div>
@@ -518,7 +511,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recente berichten</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
