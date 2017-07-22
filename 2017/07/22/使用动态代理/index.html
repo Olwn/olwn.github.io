@@ -3,17 +3,19 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Blog</title>
+  <title>使用动态代理 | Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Java, Concurrency, Web">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Blog">
-<meta property="og:url" content="https://olwn.github.io/index.html">
+  <meta name="description" content="Decorating with dynamic proxies 动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。 代理模式代理模式涉及到创建 桩(stub) 和 替代(surrogate) 对象，目的是接收请求然后转发到另一个对象执行。代理模式在RMI(Remote Method">
+<meta name="keywords" content="Java,译文,Brain Goetz,代理">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用动态代理">
+<meta property="og:url" content="https://olwn.github.io/2017/07/22/使用动态代理/index.html">
 <meta property="og:site_name" content="Blog">
-<meta property="og:description" content="Java, Concurrency, Web">
+<meta property="og:description" content="Decorating with dynamic proxies 动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。 代理模式代理模式涉及到创建 桩(stub) 和 替代(surrogate) 对象，目的是接收请求然后转发到另一个对象执行。代理模式在RMI(Remote Method">
+<meta property="og:updated_time" content="2017-07-22T09:32:08.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Blog">
-<meta name="twitter:description" content="Java, Concurrency, Web">
+<meta name="twitter:title" content="使用动态代理">
+<meta name="twitter:description" content="Decorating with dynamic proxies 动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。 代理模式代理模式涉及到创建 桩(stub) 和 替代(surrogate) 对象，目的是接收请求然后转发到另一个对象执行。代理模式在RMI(Remote Method">
   
     <link rel="alternate" href="/atom.xml" title="Blog" type="application/atom+xml">
   
@@ -79,9 +81,7 @@ ga('send', 'pageview');
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-使用动态代理" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-使用动态代理" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/07/22/使用动态代理/" class="article-date">
   <time datetime="2017-07-22T07:17:32.000Z" itemprop="datePublished">2017-07-22</time>
@@ -94,8 +94,8 @@ ga('send', 'pageview');
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/22/使用动态代理/">使用动态代理</a>
+    <h1 class="article-title" itemprop="name">
+      使用动态代理
     </h1>
   
 
@@ -130,403 +130,19 @@ ga('send', 'pageview');
     </footer>
   </div>
   
-</article>
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-好的监听器" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/21/好的监听器/" class="article-date">
-  <time datetime="2017-07-21T14:00:32.000Z" itemprop="datePublished">2017-07-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/21/好的监听器/">好的监听器</a>
-    </h1>
+    <a href="/2017/07/21/好的监听器/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">好的监听器</div>
+    </a>
   
+</nav>
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><a href="https://www.ibm.com/developerworks/java/library/j-jtp07265/index.html?ca=drs-#artrelatedtopics" target="_blank" rel="external">Be a good (event) listener</a></p>
-<p>Swing框架大量使用了观察者模式(也成为发布-订阅模式)，主要用在事件监听器上。Swing的组件在和用户交互时会触发事件；数据发生改变时，数据模型类也会触发事件。观察者模式的使用，使得控制器和模型分离，模型和视图分离，简化了GUI应用的开发。</p>
-<p>设计模式经典书籍 <em>Gang of Four</em> 把观察者模式定义为 “对象之间的某种一对多依赖，当对象的状态变动时，所有的依赖都会自动更新”。观察者模式松解了组件的耦合；组件的状态可以自动保持同步，不需要直接了解其他组件的细节，有利于组件重用。<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/07/21/好的监听器/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/21/好的监听器/" data-id="cj5f3irqu000b82jgn3pkvjcy" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GC/">GC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/监听器/">监听器</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
-
-    </footer>
-  </div>
   
 </article>
-
-
-  
-    <article id="post-泛型陷阱" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/19/泛型陷阱/" class="article-date">
-  <time datetime="2017-07-19T13:48:50.000Z" itemprop="datePublished">2017-07-19</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/19/泛型陷阱/">泛型陷阱</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><a href="https://www.ibm.com/developerworks/java/library/j-jtp01255/index.html?ca=drs-" target="_blank" rel="external">原文Generics gotchas</a></p>
-<p>泛型表面上很像C++模板，不论是语法还是主要用途(容器类)。但实际上，Java的泛型特性几乎是在编译器中实现的，包括进行类型检查、类型推断，然后生成普通的 不存在泛型的字节码。这种实现被称为类型擦除(erasure)，具有相当经验的效果，但有时也让人困惑。泛型使得Java朝着类型安全又迈了一大步，不过学习过程令人头疼。<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/07/19/泛型陷阱/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/19/泛型陷阱/" data-id="cj5f3irr3000d82jgbk30v6fg" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/泛型/">泛型</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Java动态编译技术" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/17/Java动态编译技术/" class="article-date">
-  <time datetime="2017-07-17T15:14:04.000Z" itemprop="datePublished">2017-07-17</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/17/Java动态编译技术/">Java动态编译技术</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>原文链接<a href="https://www.ibm.com/developerworks/java/library/j-jtp12214/index.html?ca=drs-" target="_blank" rel="external">Dynamic compilation and performance measurement</a></p>
-<p>最近我在写一篇文章解剖一个写得很烂的评测。程序员都喜欢讨论性能，当我偶尔写了一点和性能相关的东西时，会收到很多邮件，说为什么我的测试结果和你的不一样。这反映出大家并不了解JVM是如何执行字节码的。现在让我们来看看JVM的底层吧。理解动态编译和优化是辨别一个好的性能评测的关键。<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/07/17/Java动态编译技术/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/17/Java动态编译技术/" data-id="cj5f3irqf000482jg221cgymr" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JVM/">JVM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-深入探讨原子性" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/16/深入探讨原子性/" class="article-date">
-  <time datetime="2017-07-16T06:03:46.000Z" itemprop="datePublished">2017-07-16</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/16/深入探讨原子性/">深入探讨原子性</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>原文<a href="https://www.ibm.com/developerworks/java/library/j-jtp11234/index.html?ca=drs-" target="_blank" rel="external">Going Atomic</a></p>
-<p>很多年前，多处理器系统是价格高昂的专用系统。现在(2004年)，多处理器系统变得便宜和常见，几乎每个主流的处理器都有内建的多线程支持，有的甚至包含了上百个处理器核心。</p>
-<p>为了充分利用多处理器系统，应用程序应该使用多线程。但是，任何写过并发程序的人都知道，简单的把工作分给多个线程并不足以达到好的硬件利用率，必须确保线程把大部分时间花在了运行实际任务上而不是等待锁。<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/07/16/深入探讨原子性/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/16/深入探讨原子性/" data-id="cj5f3irqm000882jgtdbyrvbx" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-同步锁" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/05/同步锁/" class="article-date">
-  <time datetime="2017-07-05T15:05:18.000Z" itemprop="datePublished">2017-07-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/05/同步锁/">同步锁</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><a href="https://www.ibm.com/developerworks/java/library/j-jtp10264/index.html?ca=drs-" target="_blank" rel="external">原文链接</a></p>
-<p>多线程和并发不是新话题，但是Java首先将跨平台的线程模型和内存模型纳入到语言特性中。核心库包括了<code>Thread</code>类，可以用于创建、启动和维护线程，另外还包含了可用于添加线程并发约束的关键字<code>synchronized</code>和<code>volatile</code>。虽然这些类和特性简化了并发类的开发，但不意味着那变得很容易。<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/07/05/同步锁/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/05/同步锁/" data-id="cj5f3irqk000782jg2cye3r7x" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-软引用" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/01/软引用/" class="article-date">
-  <time datetime="2017-07-01T09:01:02.000Z" itemprop="datePublished">2017-07-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/01/软引用/">软引用</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="用软引用堵住内存泄露"><a href="#用软引用堵住内存泄露" class="headerlink" title="用软引用堵住内存泄露"></a>用软引用堵住内存泄露</h1><p><a href="https://www.ibm.com/developerworks/java/library/j-jtp01246/index.html?ca=drs-" target="_blank" rel="external">Brian Goetz原文链接</a></p>
-<p>GC使得Java程序不再发生内存泄露，至少对于狭窄定义的内存泄露是成立的，但是这并不意味着我们可以完全不关注程序中的对象的生命周期。Java中的内存泄露的产生，通常是由于我们忽略或者是错误的管理了对象的生命周期。比如，<a href="http://www.ibm.com/developerworks/java/library/j-jtp11225/index.html" target="_blank" rel="external">上篇文章</a>里解释了，错误的生命周期定义会导致意外的对象滞留，它发生于当我们试图把transient对象和类成员关联起来的时候。另外，某些其他的习惯会忽略或扰乱对象生命周期管理，从而导致内存泄露。<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/07/01/软引用/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/01/软引用/" data-id="cj5f3irqs000a82jgb9rhvtvw" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GC/">GC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Builder构建器" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/06/28/Builder构建器/" class="article-date">
-  <time datetime="2017-06-28T06:40:03.000Z" itemprop="datePublished">2017-06-28</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/06/28/Builder构建器/">Builder构建器</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>使用过Python语言的同学们肯定知道，函数的参数有positional和keyword两种类型，第一种就是广泛存在于Java C++中的参数，按位置识别，第二种是用名字标识的。<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/06/28/Builder构建器/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/06/28/Builder构建器/" data-id="cj5f3irq4000082jguf73szgu" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-创建和销毁对象" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/06/27/创建和销毁对象/" class="article-date">
-  <time datetime="2017-06-27T13:35:13.000Z" itemprop="datePublished">2017-06-27</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/06/27/创建和销毁对象/">创建和销毁对象</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>对于类的使用者，获取实例的方式通常是调用该类的构造方法。构造方法是一种特殊的方法，它的名字只能和类名相同。如果要允许不同创建方式，只能构建参数签名不同的构造方法。另外，每调用一次构造方法，就会有一个新的对象产生，这在某些场景下不适用，比如单(多)例模式。简单的说，构造方法的灵活性不够。当然，得到类实例不一定通过构造方法，普通的method同样可以返回对象。通常把静态的，返回类型和所属类相同的方法称为factory method。它具有以下几点优势。<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/06/27/创建和销毁对象/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/06/27/创建和销毁对象/" data-id="cj5f3irqj000582jgzptn3zml" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/06/27/hello-world/" class="article-date">
-  <time datetime="2017-06-27T12:31:58.000Z" itemprop="datePublished">2017-06-27</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/06/27/hello-world/">Hello World</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.<br>
-        
-          <p class="article-more-link">
-            <a href="/2017/06/27/hello-world/#more">Read More</a>
-          </p>
-        
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/06/27/hello-world/" data-id="cj5f3irq9000182jgo7dm1igh" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 </section>
         
