@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="Blog">
 <meta property="og:description" content="Be a good (event) listener Swing框架大量使用了观察者模式(也成为发布-订阅模式)，主要用在事件监听器上。Swing的组件在和用户交互时会触发事件；数据发生改变时，数据模型类也会触发事件。观察者模式的使用，使得控制器和模型分离，模型和视图分离，简化了GUI应用的开发。 设计模式经典书籍 Gang of Four 把观察者模式定义为 “对象之间的某种一对多依赖，当对象的">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp07265/figure1.gif">
-<meta property="og:updated_time" content="2017-07-21T16:14:19.000Z">
+<meta property="og:updated_time" content="2017-07-22T07:09:59.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="好的监听器">
 <meta name="twitter:description" content="Be a good (event) listener Swing框架大量使用了观察者模式(也成为发布-订阅模式)，主要用在事件监听器上。Swing的组件在和用户交互时会触发事件；数据发生改变时，数据模型类也会触发事件。观察者模式的使用，使得控制器和模型分离，模型和视图分离，简化了GUI应用的开发。 设计模式经典书籍 Gang of Four 把观察者模式定义为 “对象之间的某种一对多依赖，当对象的">
@@ -71,9 +71,9 @@ ga('send', 'pageview');
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
@@ -117,18 +117,30 @@ ga('send', 'pageview');
 <p>如果你使用一个迭代器遍历监听器列表，你还是会碰到一样的问题；不过不是<code>NullPointerException</code>异常，而是得到<code>ConcurrentModificationException</code>异常，如果迭代器检测到集合类被修改了。同样的，这可以通过对迭代过程额外加锁解决。</p>
 <p><code>java.util.concurrent</code>包中的<code>CopyOnWriteArrayList</code>类，可以帮助阻止这个问题。它是线程安全的，但是它的迭代器不会抛出<code>ConcurrentModificationException</code>异常，不需要额外加锁。这是通过每次修改时复制再新建实现的，所以修改列表不会影响到正在遍历列表的线程。虽然这听起来效率不好，但记住观察者模式中，每个组件只有很少量的监听器，添加和移除的时候远远少于遍历。所以更快的遍历速度补偿了稍微耗时的修改，并且提供了更好的并发性能，多个线程可以同时遍历一个列表。</p>
 <h4 id="初始化的安全性风险"><a href="#初始化的安全性风险" class="headerlink" title="初始化的安全性风险"></a>初始化的安全性风险</h4><p>通过构造函数注册监听器似乎很方便，但是会存在一些问题。不仅会导致<a href="https://en.wikipedia.org/wiki/Lapsed_listener_problem" target="_blank" rel="external">残留监听器</a>，而且有线程安全的问题。下面的代码尝试在创建监听器的时候注册它，问题在于可能会使用到还未构造好的<code>this</code>对象。表面上看没有问题，因为注册是最后一条语句，但是外表是有欺骗性的。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EventListener</span> </span>&#123; </div><div class="line"> </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">EventListener</span><span class="params">(EventSource eventSource)</span> </span>&#123;</div><div class="line">    <span class="comment">// do our initialization</span></div><div class="line">    ...</div><div class="line"> </div><div class="line">    <span class="comment">// register ourselves with the event source</span></div><div class="line">    eventSource.registerListener(<span class="keyword">this</span>);</div><div class="line">  &#125;</div><div class="line"> </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">onEvent</span><span class="params">(Event e)</span> </span>&#123; </div><div class="line">    <span class="comment">// handle the event</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EventListener</span> </span>&#123; </div><div class="line"> </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">EventListener</span><span class="params">(EventSource eventSource)</span> </span>&#123;</div><div class="line">    <span class="comment">// do our initialization</span></div><div class="line">    ...</div><div class="line">    <span class="comment">// register ourselves with the event source</span></div><div class="line">    eventSource.registerListener(<span class="keyword">this</span>);</div><div class="line">  &#125;</div><div class="line"> </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">onEvent</span><span class="params">(Event e)</span> </span>&#123; </div><div class="line">    <span class="comment">// handle the event</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>一个风险发生在监听器被继承的情况下，子类调用构造函数之前一定得先调用<code>EventListener</code>，意味构造过程会先注册一个<code>EventListener</code>，才能进行其他操作。在某个不幸运的时刻，<em>代码3</em>中，<code>onEvent</code>方法会在<code>list</code>变量初始化之前就被调用，会导致诡异的<code>NullPointerException</code>异常。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码3</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RecordingEventListener</span> <span class="keyword">extends</span> <span class="title">EventListener</span> </span>&#123;</div><div class="line">  <span class="keyword">private</span> <span class="keyword">final</span> ArrayList&lt;Event&gt; list;</div><div class="line"> </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">RecordingEventListener</span><span class="params">(EventSource eventSource)</span> </span>&#123;</div><div class="line">    <span class="keyword">super</span>(eventSource);</div><div class="line">    list = Collections.synchronizedList(<span class="keyword">new</span> ArrayList&lt;Event&gt;());</div><div class="line">  &#125;</div><div class="line"> </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">onEvent</span><span class="params">(Event e)</span> </span>&#123; </div><div class="line">    list.add(e);</div><div class="line">    <span class="keyword">super</span>.onEvent(e);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>即便监听器类被声明为<code>final</code>的，不能被子类化，你仍然不应该在构造函数中使用<code>this</code>对象，这样做会损坏Java内存模型提供的安全性。不直接用<code>this</code>，仍然可能使用到它；发布一个非静态的内部类实例有相同的效果，因为内部类对象包含了<code>this</code>引用。<em>代码4</em> 展示了这种情况。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码4</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EventListener2</span> </span>&#123;</div><div class="line">  </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="title">EventListener2</span><span class="params">(EventSource eventSource)</span> </span>&#123;</div><div class="line">    eventSource.registerListener(</div><div class="line">      <span class="keyword">new</span> EventListener() &#123;</div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onEvent</span><span class="params">(Event e)</span> </span>&#123; </div><div class="line">          eventReceived(e);</div><div class="line">        &#125;</div><div class="line">      &#125;);</div><div class="line">  &#125;</div><div class="line"> </div><div class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">eventReceived</span><span class="params">(Event e)</span> </span>&#123;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p><strong>所以不要在构造器中注册监听器。</strong></p>
-<h4 id="监听器的类型安全"><a href="#监听器的类型安全" class="headerlink" title="监听器的类型安全"></a>监听器的类型安全</h4><p>未完明天续…</p>
+<h4 id="监听器的类型安全"><a href="#监听器的类型安全" class="headerlink" title="监听器的类型安全"></a>监听器的类型安全</h4><p>监听器的第三个线程安全问题是，监听器会访问应用数据，通常是在一个不受应用直接控制的线程中进行。如果注册了一个监听器到<code>JButton</code>，那么监听器会在EDT中调用。监听器代码可以安全的调用组件的方法，但是访问应用数据就不一定安全了。</p>
+<p>Swing组件在用户交互过程中生成事件，而Swing模型类在<code>fireXxEvent</code>方法被调用时生成事件。这类方法进而调用监听器，不论是在哪个线程中触发的。Swing模型类不是线程安全的，应该被被EDT管理，任何对<code>fireXxEvent</code>的调用都应该发生在EDT中。如果你想在另一个线程中触发事件，你应该使用Swing的<code>invokeLater</code>方法，使得监听器稍后被EDT调用。总之，要知道监听器会被什么线程调用，保证监听器访问的对象是线程安全的，必要的时候添加同步锁。</p>
+<h4 id="悬空监听器-lapsed-listener"><a href="#悬空监听器-lapsed-listener" class="headerlink" title="悬空监听器(lapsed listener)"></a>悬空监听器(lapsed listener)</h4><p>监听器模式意味着把两个对象联系在一起，即监听者和被监听者。通常它们的生命周期是不一样的。注册一个监听器，会在被监听者中创建一个对监听者的引用，这会阻止监听者被GC掉，除非监听器被注销。很多情况下，监听器的生命周期至少和被监听对象一样长，许多监听器在整个应用运行期间都存在。但有时候，本想短期起作用的监听器却一直存活，并且你会观察到应用程序运行缓慢、内存占用过高等现象。</p>
+<p>悬空监听器问题是一种设计缺陷：没有认真考虑对象的生命周期，马马虎虎的编程。监听器的注册和注销始终应该是搭配在一起使用的。另外，你还必须保证没有注销的监听器在正确的时间被调用。代码5展示了悬空监听器的风险。它的确注册了监听器、做了一些操作，然后注销了监听器。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码5</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">processFile</span><span class="params">(String filename)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">  cancelButton.registerListener(<span class="keyword">this</span>);</div><div class="line">  <span class="comment">// open file, read it, process it</span></div><div class="line">  <span class="comment">// might throw IOException</span></div><div class="line">  cancelButton.unregisterListener(<span class="keyword">this</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>问题在于，如果读文件时抛出了一个异常，监听器永远不会被释放，意味着它永远不会被释放。这里应该把释放操作放在<code>finally</code>块中，确保任何执行路径都会释放。</p>
+<p>某些人会建议使用弱引用解决。虽然这是可能的，但是非常难以实现，你必须找到另一个和监听器生命周期完全一样的对象，保持它对监听器的强引用。</p>
+<p>另一个可以帮助发现隐藏的悬空监听器的方法，是阻止同一个监听器对象被两次注册到同一个事件上。两次注册意味着有bug，意味着有忘记注销的监听器。可以通过使用<code>Set</code>而不是<code>List</code>保存监听器集合来达到目的。你也可以注册前检查<code>List</code>中是否已经有了同样的监听器，如果是则抛出一个异常。这种异常意味着代码有bug。</p>
+<h2 id="监听器的其他风险"><a href="#监听器的其他风险" class="headerlink" title="监听器的其他风险"></a>监听器的其他风险</h2><p>实现监听器的时候，一定要了解它们的执行环境。不仅是线程安全问题，你需要知道监听器还可能以其他方式搞砸事情。首先监听器不应该有阻塞，因为它的执行上下文会期待调用后可以立即返回。如果监听器要做耗时的事情，比如socket IO，它应该在独立的线程中执行。</p>
+<p>监听器的另一个麻烦是可能会抛出不受检查的异常。虽然大多数时候，我们从来不打算抛出抛出不受检查的异常，但它确实可能发生。如果用代码1中的方式调用监听器，第二个监听器抛出unchecked异常，不仅后面的监听器不会被调用，而且会导致线程失败，触发应用程序错误。</p>
+<p>在调用未知代码 (监听器算) 时，必须在<code>try-catch</code>块中进行，这样有缺陷的监听器不会导致更大的破坏。你甚至想自动的注销抛出unchecked异常的监听器，毕竟异常表明监听器有问题。代码6展示了这样一个例子</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 稳定的监听器调用</span></div><div class="line">List&lt;Listener&gt; list;</div><div class="line"><span class="keyword">for</span> (Iterator&lt;Listener&gt; i=list.iterator; i.hasNext(); ) &#123;</div><div class="line">    Listener l = i.next();</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        l.eventHappened(event);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">catch</span> (RuntimeException e) &#123;</div><div class="line">        log(<span class="string">"Unexpected exception in listener"</span>, e);</div><div class="line">        i.remove();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>监听器模式对于创建松耦合的组件非常有用，利于组件复用，但是它有几个风险，需要监听器编写者和使用者都注意。注册编译器时，一定要了解监听器的生命周期。如果是期望的声明周期比应用程序短，请保证它在合适的时候被释放。编写监听器和组件时，请知道相关的线程安全问题。任何被监听器访问到的对象，请确保是线程安全的。对于线程管理的对象，比如Swing模型，监听器应该被确保在正确的线程中执行。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/21/好的监听器/" data-id="cj5e2msnt000a62jgbguo32nn" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/07/21/好的监听器/" data-id="cj5eyg4ox0008yhjgqo80y24x" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -139,7 +151,7 @@ ga('send', 'pageview');
   
   
     <a href="/2017/07/19/泛型陷阱/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
+      <strong class="article-nav-caption">Ancien</strong>
       <div class="article-nav-title">泛型陷阱</div>
     </a>
   
@@ -157,7 +169,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">Mot-clés</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/泛型/">泛型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -167,7 +179,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
+    <h3 class="widget-title">Nuage de mot-clés</h3>
     <div class="widget tagcloud">
       <a href="/tags/Atomic/" style="font-size: 10px;">Atomic</a> <a href="/tags/Brain-Goetz/" style="font-size: 16.67px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 13.33px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 10px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/同步/" style="font-size: 13.33px;">同步</a> <a href="/tags/构造/" style="font-size: 13.33px;">构造</a> <a href="/tags/泛型/" style="font-size: 10px;">泛型</a> <a href="/tags/译文/" style="font-size: 16.67px;">译文</a>
     </div>
@@ -186,7 +198,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
         
@@ -223,7 +235,7 @@ ga('send', 'pageview');
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Brav3heart<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
