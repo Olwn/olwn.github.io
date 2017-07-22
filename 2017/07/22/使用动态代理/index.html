@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://olwn.github.io/2017/07/22/使用动态代理/index.html">
 <meta property="og:site_name" content="Blog">
 <meta property="og:description" content="Decorating with dynamic proxies 动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。">
-<meta property="og:updated_time" content="2017-07-22T13:28:02.000Z">
+<meta property="og:updated_time" content="2017-07-22T14:08:57.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用动态代理">
 <meta name="twitter:description" content="Decorating with dynamic proxies 动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。">
@@ -72,7 +72,7 @@ ga('send', 'pageview');
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Søk"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
@@ -140,7 +140,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/22/使用动态代理/" data-id="cj5fcavdi0001hljgnhk4bddi" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/07/22/使用动态代理/" data-id="cj5fchg4y0004isjgv5udnhyt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/代理/">代理</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -162,7 +162,21 @@ ga('send', 'pageview');
   
 </article>
 
-</section>
+<div id="comment"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+  id: '{{page.articleId}}', // 可选。默认为 location.href
+  owner: 'olwn',
+  repo: 'Olwn.github.io',
+  oauth: {
+    client_id: 'cb8e344afeb5bdef9df8',
+    client_secret: '3f7cabefb43a88fa94d4263acb62974ccf731d6b',
+  },
+})
+gitment.render('comment')
+</script></section>
         
           <aside id="sidebar">
   
@@ -190,7 +204,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Arkiv</h3>
+    <h3 class="widget-title">Archives</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
     </div>
@@ -200,7 +214,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Siste innlegg</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         

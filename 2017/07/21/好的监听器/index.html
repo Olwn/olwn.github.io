@@ -6,7 +6,7 @@
   <title>好的监听器 | Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="Be a good (event) listener Swing框架大量使用了观察者模式(也成为发布-订阅模式)，主要用在事件监听器上。Swing的组件在和用户交互时会触发事件；数据发生改变时，数据模型类也会触发事件。观察者模式的使用，使得控制器和模型分离，模型和视图分离，简化了GUI应用的开发。 设计模式经典书籍 Gang of Four 把观察者模式定义为 “对象之间的某种一对多依赖，当对象的">
-<meta name="keywords" content="Java,译文,Brain Goetz,GC,监听器">
+<meta name="keywords" content="Java,译文,Brain Goetz,监听器,GC">
 <meta property="og:type" content="article">
 <meta property="og:title" content="好的监听器">
 <meta property="og:url" content="https://olwn.github.io/2017/07/21/好的监听器/index.html">
@@ -74,7 +74,7 @@ ga('send', 'pageview');
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Søk"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
@@ -141,7 +141,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/21/好的监听器/" data-id="cj5fcaveg000ehljg5nk1vna1" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/07/21/好的监听器/" data-id="cj5fchg5a0008isjg50yp6ptk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GC/">GC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/监听器/">监听器</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -172,7 +172,21 @@ ga('send', 'pageview');
   
 </article>
 
-</section>
+<div id="comment"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+  id: '{{page.articleId}}', // 可选。默认为 location.href
+  owner: 'olwn',
+  repo: 'Olwn.github.io',
+  oauth: {
+    client_id: 'cb8e344afeb5bdef9df8',
+    client_secret: '3f7cabefb43a88fa94d4263acb62974ccf731d6b',
+  },
+})
+gitment.render('comment')
+</script></section>
         
           <aside id="sidebar">
   
@@ -200,7 +214,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Arkiv</h3>
+    <h3 class="widget-title">Archives</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
     </div>
@@ -210,7 +224,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Siste innlegg</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
