@@ -70,7 +70,7 @@ ga('send', 'pageview');
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Søk"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
@@ -104,25 +104,16 @@ ga('send', 'pageview');
     <div class="article-entry" itemprop="articleBody">
       
         <p><a href="https://www.ibm.com/developerworks/java/library/j-jtp08305/index.html?ca=drs-" target="_blank" rel="external">Decorating with dynamic proxies</a></p>
-<p>动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。</p>
-<h2 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h2><p>代理模式涉及到创建 <em>桩(stub)</em> 和 <em>替代(surrogate)</em> 对象，目的是接收请求然后转发到另一个对象执行。代理模式在RMI(Remote Method Invoke)中使得一个远程JVM上执行的对象就好像在本地机器上一样；通过EJB添加远程调用，安全和事物边界；通过JAX-RPC Web服务让远程服务就好像本地对象一样。这些例子里，远程对象的行为会在本地接口定义，意味着可能有多种实现。调用者不能辨别出拿到的只是一个stub而非真正的对象，因为它们它们都实现了同样的接口。stub会处理好寻找真正对象，分解返回值，回传给调用者这些事情。代理可以被用于提供远程对象，并具有延迟加载功能(EJB Entity Bean)，还可以添加log等额外模块。</p>
-<p>在JDK5.0以前，RMI stub会在编译时生成。每个远程接口有一个stub类，扮演远程对象，一个skeleton对象同时也会被生成，它做另外的事，包括参数解析，调用真实对象。</p>
-<p>不管生成的stub类是源代码还是字节码，代码生成都会为编译过程增加额外的步骤，引入困惑，因为产生了名字相近的类。另一方面，动态代理机制允许在运行时创建代理对象而无需在编译时生成stub类。JDK5.0以及之后的版本，RMI使用动态代理，RMI变得更加容易使用。许多J2EE容器也使用动态代理实现EJB。EJB技术严重依赖于截获(interception)，来实现安全和事物隔离；动态代理简化了截获的实现，通过为所有的方法调用提供一个中心的控制流路径。</p>
-<h2 id="动态代理机制"><a href="#动态代理机制" class="headerlink" title="动态代理机制"></a>动态代理机制</h2><p>动态代理的实现关键是<code>InvocationHandler</code>接口。一个调用处理器的工作是处理方法调用。调用处理器会被传入一个<code>Method</code>对象和该对象的参数列表；最简单的情况，它会通过反射调用这个方法(<code>Method.invoke()</code>)然后返回结果。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码1</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">InvocationHandler</span> </span>&#123;</div><div class="line">    <span class="function">Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span></span></div><div class="line">        <span class="keyword">throws</span> Throwable;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>每个代理都有一个关联的调用处理器，每次代理被调用，处理器也会被调用。和面向通用的设计原则(接口定义类型，类定义实现)一致，代理可以实现一个或多个接口，但不能继承类。因为代理没有可以访问的名字，它们没有构造函数，所以它们必须通过工厂创建。代码2展示了一个代理的最简单的实现，它实现了<code>Set</code>接口，分派所有的<code>Set</code>方法给包装的<code>Set</code>实例。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码2</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SetProxyFactory</span> </span>&#123;</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Set <span class="title">getSetProxy</span><span class="params">(<span class="keyword">final</span> Set s)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> (Set) Proxy.newProxyInstance</div><div class="line">          (s.getClass().getClassLoader(),</div><div class="line">                <span class="keyword">new</span> Class[] &#123; Set.class &#125;,</div><div class="line">                <span class="keyword">new</span> InvocationHandler() &#123;</div><div class="line">                    <span class="function"><span class="keyword">public</span> Object <span class="title">invoke</span><span class="params">(Object proxy, Method method, </span></span></div><div class="line">                      Object[] args) <span class="keyword">throws</span> Throwable &#123;</div><div class="line">                        <span class="keyword">return</span> method.invoke(s, args);</div><div class="line">                    &#125;</div><div class="line">                &#125;);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p><code>SetProxyFactory</code>类包含了一个静态工厂方法<code>getSetProxy</code>，它返回一个实现了<code>Set</code>接口的代理。代理对象真的实现了<code>Set</code>，调用者看来代理对象和真的对象完全一样。<code>SetProxyFactory</code>返回的代理只做一件，分派方法调用。虽然反射代码很难解读，但是保持一致的控制流并不难。每当一个方法在代理对象上被调用，它会被分派到调用处理器，通过反射执行方法。显然，没有什么实际操作的代理很蠢，是这样吗？</p>
-<h4 id="空壳适配器"><a href="#空壳适配器" class="headerlink" title="空壳适配器"></a>空壳适配器</h4><p>实际上，<code>SetProxyFactory</code>这种看起来没什么用的包装有很好的用处，它可以用来安全的限定一个对象只暴露出某个指定的接口，这样调用者就不能upcast引用，实现了更安全的传递对象到不受信任的代码中，比如一个plug-in或者回调函数。代码3包含了多个类，它们实现了一个典型的回调函数场景；你可以看到动态代理是如何更方便的实现适配器模式的。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码3 回调</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ServiceCallback</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doCallback</span><span class="params">()</span></span>;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Service</span> </span>&#123;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">serviceMethod</span><span class="params">(ServiceCallback callback)</span></span>;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServiceConsumer</span> <span class="keyword">implements</span> <span class="title">ServiceCallback</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> Service service;</div><div class="line"> </div><div class="line">    ...</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">someMethod</span><span class="params">()</span> </span>&#123;</div><div class="line">        ...</div><div class="line">        service.serviceMethod(<span class="keyword">this</span>);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p><code>ServiceConsumer</code>类实现了<code>ServiceCallback</code>，传递<code>this</code>对象给<code>serviceMethod</code>作为回调对象。这里的问题是，不能阻止<code>Service</code>的实现类upcast<code>ServiceCallback</code>为<code>ServiceConsumer</code>，然后调用<code>ServiceConsumber</code>不打算让<code>Service</code>调用的方法。有时候你觉得这没什么风险，但有时候真的会有问题。你可以让<code>callback</code>对象成为一个内部类，或者写成一个空壳适配器（代码4），然后用<code>ServiceCallbackAdapter</code>包装<code>ServiceConsumber</code>。<code>ServiceCallbackAdapter</code>可以阻止<code>Service</code>向上转换<code>ServiceCallback</code>为一个<code>ServiceConsumber</code>对象。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码4</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ServiceCallbackAdapter</span> <span class="keyword">implements</span> <span class="title">ServiceCallback</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ServiceCallback cb;</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ServiceCallbackAdapter</span><span class="params">(ServiceCallback cb)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.cb = cb;</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doCallback</span><span class="params">()</span> </span>&#123;</div><div class="line">        cb.doCallback();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>编写上面这样的适配器类很简单也很无聊。你必须为接口中的每个方法写一个转发方法。<code>ServiceCallback</code>中只定义了一个方法，但是集合类或者JDBC接口，包含了几十个方法。现代的IDE提供了托管方法工具，可以一定程度上减小工作量，但是你仍然得为每个接口写一个适配器类。似乎应该用某种更简介的方式表达 “do-nothing narrow adapter pattern”。</p>
-<h4 id="一个通用的适配器类"><a href="#一个通用的适配器类" class="headerlink" title="一个通用的适配器类"></a>一个通用的适配器类</h4>
+<p>动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。<br>
+        
+          <p class="article-more-link">
+            <a href="/2017/07/22/使用动态代理/#more">Read More</a>
+          </p>
+        
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/22/使用动态代理/" data-id="cj5f3irqe000382jgkto1or34" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/07/22/使用动态代理/" data-id="cj5f3x5hf00039bjg6aqpzn9i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/代理/">代理</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -167,7 +158,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/21/好的监听器/" data-id="cj5f3irqu000b82jgn3pkvjcy" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/07/21/好的监听器/" data-id="cj5f3x5i2000d9bjg9qq4jpiz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GC/">GC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/监听器/">监听器</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -211,7 +202,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/19/泛型陷阱/" data-id="cj5f3irr3000d82jgbk30v6fg" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/07/19/泛型陷阱/" data-id="cj5f3x5ht000a9bjgtpyohst7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/泛型/">泛型</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -255,7 +246,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/17/Java动态编译技术/" data-id="cj5f3irqf000482jg221cgymr" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/07/17/Java动态编译技术/" data-id="cj5f3x5gz00009bjg4nsa330m" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/JVM/">JVM</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -300,7 +291,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/16/深入探讨原子性/" data-id="cj5f3irqm000882jgtdbyrvbx" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/07/16/深入探讨原子性/" data-id="cj5f3x5hl00079bjgr73aczr4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Atomic/">Atomic</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -344,7 +335,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/05/同步锁/" data-id="cj5f3irqk000782jg2cye3r7x" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/07/05/同步锁/" data-id="cj5f3x5i0000b9bjg913kod6m" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -388,7 +379,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/01/软引用/" data-id="cj5f3irqs000a82jgb9rhvtvw" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/07/01/软引用/" data-id="cj5f3x5hn00089bjgxd2ll2nh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/GC/">GC</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -431,7 +422,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/06/28/Builder构建器/" data-id="cj5f3irq4000082jguf73szgu" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/06/28/Builder构建器/" data-id="cj5f3x5h700019bjgre07voxf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
@@ -474,7 +465,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/06/27/创建和销毁对象/" data-id="cj5f3irqj000582jgzptn3zml" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/06/27/创建和销毁对象/" data-id="cj5f3x5hj00059bjgbyud7vcn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
@@ -517,7 +508,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/06/27/hello-world/" data-id="cj5f3irq9000182jgo7dm1igh" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/06/27/hello-world/" data-id="cj5f3x5hg00049bjg8ybl1fzh" class="article-share-link">Share</a>
       
       
     </footer>
@@ -556,7 +547,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
+    <h3 class="widget-title">Arkiv</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
     </div>
@@ -566,7 +557,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Siste innlegg</h3>
     <div class="widget">
       <ul>
         

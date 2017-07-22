@@ -5,17 +5,17 @@
   
   <title>使用动态代理 | Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="Decorating with dynamic proxies 动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。 代理模式代理模式涉及到创建 桩(stub) 和 替代(surrogate) 对象，目的是接收请求然后转发到另一个对象执行。代理模式在RMI(Remote Method">
+  <meta name="description" content="Decorating with dynamic proxies 动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。">
 <meta name="keywords" content="Java,译文,Brain Goetz,代理">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用动态代理">
 <meta property="og:url" content="https://olwn.github.io/2017/07/22/使用动态代理/index.html">
 <meta property="og:site_name" content="Blog">
-<meta property="og:description" content="Decorating with dynamic proxies 动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。 代理模式代理模式涉及到创建 桩(stub) 和 替代(surrogate) 对象，目的是接收请求然后转发到另一个对象执行。代理模式在RMI(Remote Method">
-<meta property="og:updated_time" content="2017-07-22T09:32:08.000Z">
+<meta property="og:description" content="Decorating with dynamic proxies 动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。">
+<meta property="og:updated_time" content="2017-07-22T09:43:19.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用动态代理">
-<meta name="twitter:description" content="Decorating with dynamic proxies 动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。 代理模式代理模式涉及到创建 桩(stub) 和 替代(surrogate) 对象，目的是接收请求然后转发到另一个对象执行。代理模式在RMI(Remote Method">
+<meta name="twitter:description" content="Decorating with dynamic proxies 动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。">
   
     <link rel="alternate" href="/atom.xml" title="Blog" type="application/atom+xml">
   
@@ -72,7 +72,7 @@ ga('send', 'pageview');
         
           <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Søk"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
@@ -104,7 +104,7 @@ ga('send', 'pageview');
     <div class="article-entry" itemprop="articleBody">
       
         <p><a href="https://www.ibm.com/developerworks/java/library/j-jtp08305/index.html?ca=drs-" target="_blank" rel="external">Decorating with dynamic proxies</a></p>
-<p>动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。</p>
+<p>动态代理提供另外一种实现许多设计模式的方式，包括装饰模式，桥接模式，拦截器，装饰器，代理和适配器。虽然这些模式都可以用普通类轻易实现，但是动态代理实现会更加方便和简洁。<br><a id="more"></a></p>
 <h2 id="代理模式"><a href="#代理模式" class="headerlink" title="代理模式"></a>代理模式</h2><p>代理模式涉及到创建 <em>桩(stub)</em> 和 <em>替代(surrogate)</em> 对象，目的是接收请求然后转发到另一个对象执行。代理模式在RMI(Remote Method Invoke)中使得一个远程JVM上执行的对象就好像在本地机器上一样；通过EJB添加远程调用，安全和事物边界；通过JAX-RPC Web服务让远程服务就好像本地对象一样。这些例子里，远程对象的行为会在本地接口定义，意味着可能有多种实现。调用者不能辨别出拿到的只是一个stub而非真正的对象，因为它们它们都实现了同样的接口。stub会处理好寻找真正对象，分解返回值，回传给调用者这些事情。代理可以被用于提供远程对象，并具有延迟加载功能(EJB Entity Bean)，还可以添加log等额外模块。</p>
 <p>在JDK5.0以前，RMI stub会在编译时生成。每个远程接口有一个stub类，扮演远程对象，一个skeleton对象同时也会被生成，它做另外的事，包括参数解析，调用真实对象。</p>
 <p>不管生成的stub类是源代码还是字节码，代码生成都会为编译过程增加额外的步骤，引入困惑，因为产生了名字相近的类。另一方面，动态代理机制允许在运行时创建代理对象而无需在编译时生成stub类。JDK5.0以及之后的版本，RMI使用动态代理，RMI变得更加容易使用。许多J2EE容器也使用动态代理实现EJB。EJB技术严重依赖于截获(interception)，来实现安全和事物隔离；动态代理简化了截获的实现，通过为所有的方法调用提供一个中心的控制流路径。</p>
@@ -122,7 +122,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/22/使用动态代理/" data-id="cj5f3irqe000382jgkto1or34" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/07/22/使用动态代理/" data-id="cj5f3x5hf00039bjg6aqpzn9i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/代理/">代理</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -172,7 +172,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
+    <h3 class="widget-title">Arkiv</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
     </div>
@@ -182,7 +182,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Siste innlegg</h3>
     <div class="widget">
       <ul>
         
