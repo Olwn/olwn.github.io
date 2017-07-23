@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>同步优化 | Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Synchronization optimizations in Mustang 只要涉及到变量在多个线程共享，你必须使用同步以确保一个线程的更改立即对其他线程可见。实现同步的主要方式是synchronized代码块，它可以保证独占性访问和可见性。(也还有其他方式，包括volatile关键字，Lock对象，Atomic对象) 当两个线程要访问一个共享的变量时，不仅两个线程都要使用同步，而且sync">
+<meta name="keywords" content="Java,译文,Brain Goetz,同步">
+<meta property="og:type" content="article">
+<meta property="og:title" content="同步优化">
+<meta property="og:url" content="https://olwn.github.io/2017/07/23/同步优化/index.html">
+<meta property="og:site_name" content="Blog">
+<meta property="og:description" content="Synchronization optimizations in Mustang 只要涉及到变量在多个线程共享，你必须使用同步以确保一个线程的更改立即对其他线程可见。实现同步的主要方式是synchronized代码块，它可以保证独占性访问和可见性。(也还有其他方式，包括volatile关键字，Lock对象，Atomic对象) 当两个线程要访问一个共享的变量时，不仅两个线程都要使用同步，而且sync">
+<meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp10185/jmm.gif">
+<meta property="og:updated_time" content="2017-07-23T03:17:22.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="同步优化">
+<meta name="twitter:description" content="Synchronization optimizations in Mustang 只要涉及到变量在多个线程共享，你必须使用同步以确保一个线程的更改立即对其他线程可见。实现同步的主要方式是synchronized代码块，它可以保证独占性访问和可见性。(也还有其他方式，包括volatile关键字，Lock对象，Atomic对象) 当两个线程要访问一个共享的变量时，不仅两个线程都要使用同步，而且sync">
+<meta name="twitter:image" content="https://www.ibm.com/developerworks/java/library/j-jtp10185/jmm.gif">
+  
+    <link rel="alternate" href="/atom.xml" title="Blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-102822425-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Stay hungry, Stay foolish.</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-同步优化" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/23/同步优化/" class="article-date">
+  <time datetime="2017-07-23T02:03:12.000Z" itemprop="datePublished">2017-07-23</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      同步优化
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://www.ibm.com/developerworks/java/library/j-jtp10185/index.html?ca=drs-" target="_blank" rel="external">Synchronization optimizations in Mustang</a></p>
+<p>只要涉及到变量在多个线程共享，你必须使用同步以确保一个线程的更改立即对其他线程可见。实现同步的主要方式是<code>synchronized</code>代码块，它可以保证独占性访问和可见性。(也还有其他方式，包括<code>volatile</code>关键字，<code>Lock</code>对象，<code>Atomic</code>对象) 当两个线程要访问一个共享的变量时，不仅两个线程都要使用同步，而且<code>synchronized</code>代码块必须是用的同一个锁。</p>
+<p>实际中，锁可以分为激烈竞争的不激烈竞争的。<a id="more"></a>激烈竞争锁是应用中 “hot” 的锁，比如用于保证线程池的共享工作队列的锁。被激烈锁保护的数据会持续的被多个线程访问，很可能某个线程申请锁时必须等一定时间才能获得锁。不激烈锁是保护的是访问不频繁的数据，大多数时候某个线程申请锁就可以立马获得锁。应用程序中，大多数锁是不激烈的，因此提升不激烈锁的效率可以改进整个应用的效率。</p>
+<p>JVM针对激烈锁和不激烈锁有不同的执行方式。针对不激烈锁的执行，JVM已经有了很多优化工作；Java 6进一步提升了两种锁，添加了许多优化，某些情况下甚至可以去掉一些锁。</p>
+<h2 id="锁省略"><a href="#锁省略" class="headerlink" title="锁省略"></a>锁省略</h2><p>JMM(Java Memory Model) 保证一个线程执行<code>synchronized</code>代码 <em>happens-before</em> 另一个进入同个<code>synchronized</code>代码块的线程；这意味着线程A的任何内存操作都会在退出同步块之前对B线程可见，如图1所示。对于使用不同锁的<code>synchronized</code>块，没有任何顺序上的保证，就好像根本没有加锁。</p>
+<p><img src="https://www.ibm.com/developerworks/java/library/j-jtp10185/jmm.gif" alt="图1 JMM中的同步和可见性"></p>
+<p>如果一个线程进入了一个<code>synchronized</code>代码块，而永远不会有其他线程使用同一个锁进入这个代码块，那么同步是没有任何作用的，可以去掉。这种情况听起来不太可能存在，但确实会发生。代码1展示了一个线程本地锁的例子。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码1</span></div><div class="line"><span class="keyword">synchronized</span> (<span class="keyword">new</span> Object()) &#123;</div><div class="line">    doSomething();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>因为锁引用不会被其他线程用到，编译器可以判断出上面的同步可以删掉。虽然不会有人写出这样的代码，这份代码代表了一种情况，锁对象是一个线程本地(thread-local)变量。”Thread-local” 不需要是通过<code>ThreadLocal</code>类实现，可以是任何变量，只要能被编译器证明它永远不会被其他线程访问到。局部对象符合这个条件，如果一个对象只存在于某个线程的栈，那么其他线程不可能访问到它。(对象被多个线程共享的唯一方式是它的引用存在于堆区)。</p>
+<p>范围分析(escape analysis)为编译器提供了很好的信息，用于去掉使用线程本地锁的<code>synchronized</code>代码块。如果编译器可以证明一个对象永远不能通过堆变量访问，那么它一定是线程本地对象，任何使用这个对象作为锁的<code>synchronized</code>代码块没有同步的必要，所以锁可以被去掉。这种优化被称为 <em>lock elision</em> ，是Java5添加到JVM中的优化。</p>
+<p>线程本地变量作为锁这种情况，比你想象的要更常见。有很多实例，比如<code>StringBuffer</code>，<code>java.util.Random</code>，都是线程安全的因为它们可能被多个线程用到，但是大多数时候都是<code>thread-local</code>方式使用。</p>
+<p>考虑代码2中的代码，使用<code>Vector</code>构建字符串。<code>getStoogeNames()</code>方法创建一个<code>Vector</code>，添加多个字符串，然后调用<code>toString</code>。每次调用<code>Vector</code>的方法，需要获取和释放锁。虽然这里是不激烈锁，获取成本很低，但是编译器实际上会使用 <em>lock elision</em> 完全去掉锁。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> String <span class="title">getStoogeNames</span><span class="params">()</span> </span>&#123;</div><div class="line">     Vector v = <span class="keyword">new</span> Vector();</div><div class="line">     v.add(<span class="string">"Moe"</span>);</div><div class="line">     v.add(<span class="string">"Larry"</span>);</div><div class="line">     v.add(<span class="string">"Curly"</span>);</div><div class="line">     <span class="keyword">return</span> v.toString();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>因为没有<code>Vector v</code>的引用逃出(escape)了这个函数，</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://olwn.github.io/2017/07/23/同步优化/" data-id="cj5g5knz200047yjg5ndkz7pg" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/07/22/使用动态代理/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ancien</strong>
+      <div class="article-nav-title">使用动态代理</div>
+    </a>
+  
+</nav>
+
+  
+
+<div id="comment"></div>
+</article>
+
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+  owner: 'olwn',
+  repo: 'Olwn.github.io',
+  oauth: {
+    client_id: 'cb8e344afeb5bdef9df8',
+    client_secret: '3f7cabefb43a88fa94d4263acb62974ccf731d6b',
+  },
+})
+gitment.render('comment')
+</script>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Mot-clés</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代理/">代理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/泛型/">泛型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Brain-Goetz/" style="font-size: 17.5px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 12.5px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 12.5px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/代理/" style="font-size: 10px;">代理</a> <a href="/tags/同步/" style="font-size: 15px;">同步</a> <a href="/tags/构造/" style="font-size: 12.5px;">构造</a> <a href="/tags/泛型/" style="font-size: 10px;">泛型</a> <a href="/tags/译文/" style="font-size: 17.5px;">译文</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Articles récents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/07/23/同步优化/">同步优化</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/22/使用动态代理/">使用动态代理</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/21/好的监听器/">好的监听器</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/19/泛型陷阱/">泛型陷阱</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/17/Java动态编译技术/">Java动态编译技术</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Brav3heart<br>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>
