@@ -68,9 +68,9 @@ ga('send', 'pageview');
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
@@ -80,6 +80,50 @@ ga('send', 'pageview');
 </header>
       <div class="outer">
         <section id="main">
+  
+    <article id="post-创建和销毁对象" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/06/27/创建和销毁对象/" class="article-date">
+  <time datetime="2017-06-27T13:35:13.000Z" itemprop="datePublished">2017-06-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/06/27/创建和销毁对象/">创建和销毁对象</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>对于类的使用者，获取实例的方式通常是调用该类的构造方法。构造方法是一种特殊的方法，它的名字只能和类名相同。如果要允许不同创建方式，只能构建参数签名不同的构造方法。另外，每调用一次构造方法，就会有一个新的对象产生，这在某些场景下不适用，比如单(多)例模式。简单的说，构造方法的灵活性不够。当然，得到类实例不一定通过构造方法，普通的method同样可以返回对象。通常把静态的，返回类型和所属类相同的方法称为factory method。它具有以下几点优势。<br>
+        
+          <p class="article-more-link">
+            <a href="/2017/06/27/创建和销毁对象/#more">Read More</a>
+          </p>
+        
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://olwn.github.io/2017/06/27/创建和销毁对象/" data-id="cj5ggfqnl0007scjgwx3qc5z9" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/构造/">构造</a></li></ul>
+
+    </footer>
+  </div>
+  
+
+<div id="comment"></div>
+</article>
+
   
     <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -112,7 +156,7 @@ ga('send', 'pageview');
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/06/27/hello-world/" data-id="cj5gan35l0000eqjgnvboom4h" class="article-share-link">Share</a>
+      <a data-url="https://olwn.github.io/2017/06/27/hello-world/" data-id="cj5ggfqn20001scjgjyz1ahaf" class="article-share-link">Partager</a>
       
       
     </footer>
@@ -137,7 +181,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">Mot-clés</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代理/">代理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/泛型/">泛型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -147,7 +191,7 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
+    <h3 class="widget-title">Nuage de mot-clés</h3>
     <div class="widget tagcloud">
       <a href="/tags/Brain-Goetz/" style="font-size: 17.5px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 12.5px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 12.5px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/代理/" style="font-size: 10px;">代理</a> <a href="/tags/同步/" style="font-size: 15px;">同步</a> <a href="/tags/构造/" style="font-size: 12.5px;">构造</a> <a href="/tags/泛型/" style="font-size: 10px;">泛型</a> <a href="/tags/译文/" style="font-size: 17.5px;">译文</a>
     </div>
@@ -166,9 +210,13 @@ ga('send', 'pageview');
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2017/07/24/无锁算法/">无锁算法</a>
+          </li>
         
           <li>
             <a href="/2017/07/23/同步优化/">同步优化</a>
@@ -186,10 +234,6 @@ ga('send', 'pageview');
             <a href="/2017/07/19/泛型陷阱/">泛型陷阱</a>
           </li>
         
-          <li>
-            <a href="/2017/07/17/Java动态编译技术/">Java动态编译技术</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -203,7 +247,7 @@ ga('send', 'pageview');
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Brav3heart<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
