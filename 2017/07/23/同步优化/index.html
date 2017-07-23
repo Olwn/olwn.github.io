@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="Blog">
 <meta property="og:description" content="Synchronization optimizations in Mustang 只要涉及到变量在多个线程共享，你必须使用同步以确保一个线程的更改立即对其他线程可见。实现同步的主要方式是synchronized代码块，它可以保证独占性访问和可见性。(也还有其他方式，包括volatile关键字，Lock对象，Atomic对象) 当两个线程要访问一个共享的变量时，不仅两个线程都要使用同步，而且sync">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp10185/jmm.gif">
-<meta property="og:updated_time" content="2017-07-23T03:17:22.000Z">
+<meta property="og:updated_time" content="2017-07-23T05:39:03.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="同步优化">
 <meta name="twitter:description" content="Synchronization optimizations in Mustang 只要涉及到变量在多个线程共享，你必须使用同步以确保一个线程的更改立即对其他线程可见。实现同步的主要方式是synchronized代码块，它可以保证独占性访问和可见性。(也还有其他方式，包括volatile关键字，Lock对象，Atomic对象) 当两个线程要访问一个共享的变量时，不仅两个线程都要使用同步，而且sync">
@@ -72,9 +72,9 @@ ga('send', 'pageview');
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
@@ -118,12 +118,24 @@ ga('send', 'pageview');
 <p>线程本地变量作为锁这种情况，比你想象的要更常见。有很多实例，比如<code>StringBuffer</code>，<code>java.util.Random</code>，都是线程安全的因为它们可能被多个线程用到，但是大多数时候都是<code>thread-local</code>方式使用。</p>
 <p>考虑代码2中的代码，使用<code>Vector</code>构建字符串。<code>getStoogeNames()</code>方法创建一个<code>Vector</code>，添加多个字符串，然后调用<code>toString</code>。每次调用<code>Vector</code>的方法，需要获取和释放锁。虽然这里是不激烈锁，获取成本很低，但是编译器实际上会使用 <em>lock elision</em> 完全去掉锁。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> String <span class="title">getStoogeNames</span><span class="params">()</span> </span>&#123;</div><div class="line">     Vector v = <span class="keyword">new</span> Vector();</div><div class="line">     v.add(<span class="string">"Moe"</span>);</div><div class="line">     v.add(<span class="string">"Larry"</span>);</div><div class="line">     v.add(<span class="string">"Curly"</span>);</div><div class="line">     <span class="keyword">return</span> v.toString();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>因为没有<code>Vector v</code>的引用逃出(escape)了这个函数，</p>
+<p>因为<code>Vector v</code>的引用没有逃出(escape)这个函数范围，所以它就是thread-local的，任何使用<code>v</code>对象作为锁的<code>synchronized</code>都没有作用。编译器会内联<code>add</code>和<code>toString</code>方法，然后会识别出获取和释放锁操作都是在一个thread-local对象上进行的，四个 lock-unlock语句都可以去掉。</p>
+<h2 id="自适应锁"><a href="#自适应锁" class="headerlink" title="自适应锁"></a>自适应锁</h2><p>除了范围分析(escape analysis)和锁省略，Java6还有一些针对锁性能的优化。当两个线程竞争一个锁，结果是其中一个获得锁，另一个阻塞。通常有两种技术可以实现阻塞；一是操作系统suspend这个线程，直到它被唤醒，二是使用自旋锁。自旋锁大致是这样的</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">while</span> (lockStillInUse)</div><div class="line">  ;</div></pre></td></tr></table></figure>
+<p>虽然自选锁会消耗CPU，似乎影响效率，但是它也可以比暂停唤醒方式更高效，如果只需要等待很短一段时间的话。暂停和重新调度线程是有很明显的成本的，涉及到JVM、操作系统和硬件的工作。对于JVM的实现者，如果锁只被另一个线程持有一小段时间，那么自旋是更好的等待方式；如果锁被另一个线程持有很久，那么暂停更有效率。不知道一个应用中锁的等待时间的分布是怎样的，大多数JVM会保守的选择暂停线程。</p>
+<p>然而，我们可以做得更好！对于每个锁，JVM可以动态的选择自旋还是暂停线程，基于历史记录。 它可以尝试自旋，如果在等待一小段时间后就成功拿到锁，继续使用这种方式。但是如果自旋了一定时间都没有拿到锁，它就应该认为这是一个会被持有较长时间的锁，然后重新编译代码为使用暂停唤醒方式。这种修改可以针对每个锁或者每个加锁的地方操作。</p>
+<p>自适应锁可以得到更好的整体性能。运行一段时间后JVM就了解了锁的使用模式，它就可以针对短时锁使用自旋，针对长时锁使用暂停唤醒。静态编译语言不可能有这种优化，因为编译时，锁的使用模式是未知的。</p>
+<h2 id="锁合并"><a href="#锁合并" class="headerlink" title="锁合并"></a>锁合并</h2><p>另一种可以减小锁成本的技术是锁合并( <em>lock coarsening</em> )。锁合并是合并相邻的使用同一个锁对象的<code>synchronized</code>代码块。如果编译器不能使用<em>lock elision</em>机制去掉锁，锁合并可能还有机会。</p>
+<p>在代码3中，<em>lock elision</em> 并不适用。三次<code>add()</code>调用，连续交叉使用了加锁和释放锁操作。编译器可以观察到，这里有一个相邻的在同一个锁上的锁操作序列，然后合并它们为当个加锁块。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码3 可以进行锁合并</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addStooges</span><span class="params">(Vector v)</span> </span>&#123;</div><div class="line">     v.add(<span class="string">"Moe"</span>);</div><div class="line">     v.add(<span class="string">"Larry"</span>);</div><div class="line">     v.add(<span class="string">"Curly"</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>不仅仅减小了加锁的成本，合并把三个方法调用放进一个<code>synchronized</code>代码块，编译器得到了一个更大的代码块，可能其他原本用不上的优化方法就用得上了。</p>
+<p>甚至即便<code>synchronized</code>代码块之间还有其他语句，编译器仍然可以进行锁合并。(译者注：把未同步的代码变成同步的不会造成代码语义的变动)</p>
+<p>锁合并牵涉到性能和响应性的权衡。把多个lock-unlock操作结合成一个会提升新能，因为更少数量的指令执行和更少次数的内存总线同步。成本是，锁被连续持有的时间变长了，增加了锁竞争的可能性。然而，编译器可以基于同步代码的长度，应用启发式的优化以做出很好的权衡。(如果合并后的更大的代码块开启了其他优化操作，锁持有的时间甚至可能不会变长。)</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>竞争不激烈的锁的性能在每一个JVM版本中都会得到改进。Java6延续了这个趋势，通过改进基本的激烈锁和不激烈锁的性能，以及锁消除技术。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/23/同步优化/" data-id="cj5g5knz200047yjg5ndkz7pg" class="article-share-link">Partager</a>
+      <a data-url="https://olwn.github.io/2017/07/23/同步优化/" data-id="cj5gan38b0006eqjg8qalt40g" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -136,7 +148,7 @@ ga('send', 'pageview');
   
   
     <a href="/2017/07/22/使用动态代理/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Ancien</strong>
+      <strong class="article-nav-caption">Older</strong>
       <div class="article-nav-title">使用动态代理</div>
     </a>
   
@@ -169,7 +181,7 @@ gitment.render('comment')
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Mot-clés</h3>
+    <h3 class="widget-title">Tags</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代理/">代理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/泛型/">泛型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -179,7 +191,7 @@ gitment.render('comment')
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
       <a href="/tags/Brain-Goetz/" style="font-size: 17.5px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 12.5px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 12.5px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/代理/" style="font-size: 10px;">代理</a> <a href="/tags/同步/" style="font-size: 15px;">同步</a> <a href="/tags/构造/" style="font-size: 12.5px;">构造</a> <a href="/tags/泛型/" style="font-size: 10px;">泛型</a> <a href="/tags/译文/" style="font-size: 17.5px;">译文</a>
     </div>
@@ -198,7 +210,7 @@ gitment.render('comment')
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Articles récents</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
         
@@ -235,7 +247,7 @@ gitment.render('comment')
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Brav3heart<br>
-      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
