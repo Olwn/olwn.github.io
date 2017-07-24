@@ -11,7 +11,7 @@
 <meta property="og:url" content="https://olwn.github.io/2017/07/24/无锁算法/index.html">
 <meta property="og:site_name" content="Blog">
 <meta property="og:description" content="Introduction to nonblocking algorithms 当多个线程访问一个变量时，所有线程都要使用同步，否则发发生很不好的结果。Java语言中的最主要的同步方式是使用synchronized关键字，它保证了互斥访问和可见性。正确的使用synchronized可以得到线程安全的程序，但是锁可能太重了，尤其是对很短的代码段而言。">
-<meta property="og:updated_time" content="2017-07-23T08:21:26.000Z">
+<meta property="og:updated_time" content="2017-07-24T15:37:48.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="无锁算法">
 <meta name="twitter:description" content="Introduction to nonblocking algorithms 当多个线程访问一个变量时，所有线程都要使用同步，否则发发生很不好的结果。Java语言中的最主要的同步方式是使用synchronized关键字，它保证了互斥访问和可见性。正确的使用synchronized可以得到线程安全的程序，但是锁可能太重了，尤其是对很短的代码段而言。">
@@ -69,9 +69,9 @@ ga('send', 'pageview');
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
@@ -114,12 +114,22 @@ ga('send', 'pageview');
 <p>原子变量类被称为atomic，是因为它们提供了更新粒度的原子更新操作，针对数字和对象引用，也因为它们是构建非阻塞算法的原语。非阻塞算法已经被研究了20几年了，但直到Java5.0才成为可能。现代处理器为原子更新共享变量，提供了特别的指令，可以检测到其他线程的干扰。<code>compareAndSet()</code>用的是这些特性而不是同步锁。</p>
 <p>非阻塞算法相比于基于锁的算法，有几个性能优势。它使用硬件原语实现更细粒度(单个内存地址)的同步而不像JVM锁代码路径，获取锁失败的线程可以立即重新尝试而不是被暂停。细粒度减小了竞争的程度，无需重新调度的retry减少了竞争的成本。即便CAS会失败一定次数，这种方法仍然很可能比暂停再调度方式快。</p>
 <p><code>NonblockingCounter</code>是一个简单的例子，但是展示了所有非阻塞算法的基本特性，即某些步骤是伺机执行的，它知道如果CAS操作没有成功就必须重试。非阻塞算法是乐观的，因为它假设没有其他线程干扰或者说干扰很弱。如果真的检测到了干扰，它们会重试。在计数器的例子中，伺机执行的操作是递增，它读一个变量，加1，并期望这个过程中变量没有被修改。如果CAS失败了，它必须重新获取值，加1。</p>
-<h2 id="非阻塞栈"><a href="#非阻塞栈" class="headerlink" title="非阻塞栈"></a>非阻塞栈</h2><p>未完明天续…</p>
+<h2 id="非阻塞栈"><a href="#非阻塞栈" class="headerlink" title="非阻塞栈"></a>非阻塞栈</h2><p>下面来看一个不那么简单的例子<code>ConcurrentStack</code>。<code>push()</code>和<code>pop()</code>方法的结构和前面的<code>increment()</code>很像，特别是在提交更改时都会检查预先假设是否仍然成立。<code>push()</code>方法先观察顶部元素，构造新元素，然后如果顶部元素没有被修改，插入新元素。如果CAS失败了，意味着有其他线程修改了栈，所以线程必须重试CAS。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码3</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConcurrentStack</span>&lt;<span class="title">E</span>&gt; </span>&#123;</div><div class="line">    AtomicReference&lt;Node&lt;E&gt;&gt; head = <span class="keyword">new</span> AtomicReference&lt;Node&lt;E&gt;&gt;();</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">push</span><span class="params">(E item)</span> </span>&#123;</div><div class="line">        Node&lt;E&gt; newHead = <span class="keyword">new</span> Node&lt;E&gt;(item);</div><div class="line">        Node&lt;E&gt; oldHead;</div><div class="line">        <span class="keyword">do</span> &#123;</div><div class="line">            oldHead = head.get();</div><div class="line">            newHead.next = oldHead;</div><div class="line">        &#125; <span class="keyword">while</span> (!head.compareAndSet(oldHead, newHead));</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">public</span> E <span class="title">pop</span><span class="params">()</span> </span>&#123;</div><div class="line">        Node&lt;E&gt; oldHead;</div><div class="line">        Node&lt;E&gt; newHead;</div><div class="line">        <span class="keyword">do</span> &#123;</div><div class="line">            oldHead = head.get();</div><div class="line">            <span class="keyword">if</span> (oldHead == <span class="keyword">null</span>) </div><div class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">            newHead = oldHead.next;</div><div class="line">        &#125; <span class="keyword">while</span> (!head.compareAndSet(oldHead,newHead));</div><div class="line">        <span class="keyword">return</span> oldHead.item;</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="title">E</span>&gt; </span>&#123;</div><div class="line">        <span class="keyword">final</span> E item;</div><div class="line">        Node&lt;E&gt; next;</div><div class="line"> </div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="title">Node</span><span class="params">(E item)</span> </span>&#123; <span class="keyword">this</span>.item = item; &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="性能考量"><a href="#性能考量" class="headerlink" title="性能考量"></a>性能考量</h4><p>在中轻度竞争情况下，无阻塞算法可能会远胜于阻塞版本，因为CAS操作大多都能在第一次尝试就成功，即便失败重试也不会涉及到线程暂停和重调度的成本，只是多几次循环。无竞争的CAS操作是比无竞争锁获取的成本更低的，竞争的CAS操作造成的延迟比竞争的锁获取更短。</p>
+<p>在高度竞争情况下，许多线程同时操作同一个内存位置，基于锁的算法开始显示出优势。它们可以提供更好的吞吐量，因为阻塞的线程会停止申请锁，进入等待状态，避免了持续的竞争。然而，高级别的竞争很少见，因为大多数时候线程会交替执行本地计算和竞争访问，其他线程是有机会访问到共享数据的。(如果竞争程度很高，请检查你的程序。) <a href="http://www.ibm.com/developerworks/java/library/j-jtp11234" target="_blank" rel="external">Going atomic</a>中的图可能会造成误会，因为程序是在不切实际的竞争程度下运行的，让人觉得好像线程少时，锁也是更好的选择。</p>
+<h2 id="一个非阻塞链表"><a href="#一个非阻塞链表" class="headerlink" title="一个非阻塞链表"></a>一个非阻塞链表</h2><p>目前看的两个例子—计数器和栈—都是非常简单的非阻塞算法，只要你理解了把CAS操作放在循环里就可以实现它们。对于更复杂的数据结果，非阻塞算法也更复杂，因为修改一个链表、树或者哈希表会涉及到更新多个指针。CAS支持原子性的更新单个指针，但两个就不行了，我们需要找到一种更新多个变量的方式，要保证不会使得数据结构变成不一致的状态。</p>
+<p>插入一个元素到链接的结尾涉及到更新两个指针：总是指向最后一个元素的尾指针；之前最后元素的next指针。因为两个指针都要更新，需要两个CAS操作。用两个单独的CAS操作更新引入了两个问题：第一个成功第二个失败意味着什么？两次CAS之间存在其他变量的操作会怎样？</p>
+<p>构建非阻塞算法的技巧是确保数据结构始终处在一致的状态，即便是在一个线程修改开始和修改完成中间，还要确保其他线程可以判断前面的线程完成了更新还是正在更新，以及计算出需要做什么操作以弥补前面线程的工作。如果一个线程发现有未完成的更新，它应该可以替代前面的线程完成剩下的工作，再继续自己的操作。当前面的线程回来尝试自己继续完成更新，它会意识到不需要了然后直接返回，因为CAS会检测到有来自帮助线程的干扰(这里是积极的干扰)。</p>
+<p>这种 “帮助邻居” 的需求是必要的，这样才能数据结构可以应对某个线程的失败。如果一个线程开始操作的时候，发现数据结构是中间状态，它如果选择等待那个线程完成的话，可能会永远等下去。甚至是在没有线程失败的情况下，这种策略也是很低效的，因为会有上下文切换，或者等待它自己的时间片到期。</p>
+<p>代码4展示了一个<code>Michael-Scott</code>非阻塞队列算法的插入操作。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码4 </span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">LinkedQueue</span> &lt;<span class="title">E</span>&gt; </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span> &lt;<span class="title">E</span>&gt; </span>&#123;</div><div class="line">        <span class="keyword">final</span> E item;</div><div class="line">        <span class="keyword">final</span> AtomicReference&lt;Node&lt;E&gt;&gt; next;</div><div class="line"> </div><div class="line">        Node(E item, Node&lt;E&gt; next) &#123;</div><div class="line">            <span class="keyword">this</span>.item = item;</div><div class="line">            <span class="keyword">this</span>.next = <span class="keyword">new</span> AtomicReference&lt;Node&lt;E&gt;&gt;(next);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="keyword">private</span> AtomicReference&lt;Node&lt;E&gt;&gt; head</div><div class="line">        = <span class="keyword">new</span> AtomicReference&lt;Node&lt;E&gt;&gt;(<span class="keyword">new</span> Node&lt;E&gt;(<span class="keyword">null</span>, <span class="keyword">null</span>));</div><div class="line">    <span class="keyword">private</span> AtomicReference&lt;Node&lt;E&gt;&gt; tail = head;</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">put</span><span class="params">(E item)</span> </span>&#123;</div><div class="line">        Node&lt;E&gt; newNode = <span class="keyword">new</span> Node&lt;E&gt;(item, <span class="keyword">null</span>);</div><div class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">            Node&lt;E&gt; curTail = tail.get();</div><div class="line">            Node&lt;E&gt; residue = curTail.next.get();</div><div class="line">            <span class="keyword">if</span> (curTail == tail.get()) &#123;</div><div class="line">                <span class="keyword">if</span> (residue == <span class="keyword">null</span>) <span class="comment">/* A */</span> &#123;</div><div class="line">                    <span class="keyword">if</span> (curTail.next.compareAndSet(<span class="keyword">null</span>, newNode)) <span class="comment">/* C */</span> &#123;</div><div class="line">                        tail.compareAndSet(curTail, newNode) <span class="comment">/* D */</span> ;</div><div class="line">                        <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">                    &#125;</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    tail.compareAndSet(curTail, residue) <span class="comment">/* B */</span>;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>未完明天续..</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/24/无锁算法/" data-id="cj5ggfqod000fscjg7s6j47i1" class="article-share-link">Partager</a>
+      <a data-url="https://olwn.github.io/2017/07/24/无锁算法/" data-id="cj5ibu0jh00087yjgz6sjjbuq" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -130,7 +140,7 @@ ga('send', 'pageview');
   
   
     <a href="/2017/07/23/同步优化/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Ancien</strong>
+      <strong class="article-nav-caption">Ouder</strong>
       <div class="article-nav-title">同步优化</div>
     </a>
   
@@ -163,7 +173,7 @@ gitment.render('comment')
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Mot-clés</h3>
+    <h3 class="widget-title">Labels</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代理/">代理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/泛型/">泛型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -173,7 +183,7 @@ gitment.render('comment')
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
       <a href="/tags/Brain-Goetz/" style="font-size: 17.5px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 12.5px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 12.5px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/代理/" style="font-size: 10px;">代理</a> <a href="/tags/同步/" style="font-size: 15px;">同步</a> <a href="/tags/构造/" style="font-size: 12.5px;">构造</a> <a href="/tags/泛型/" style="font-size: 10px;">泛型</a> <a href="/tags/译文/" style="font-size: 17.5px;">译文</a>
     </div>
@@ -182,7 +192,7 @@ gitment.render('comment')
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
+    <h3 class="widget-title">Archieven</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
     </div>
@@ -192,7 +202,7 @@ gitment.render('comment')
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Articles récents</h3>
+    <h3 class="widget-title">Recente berichten</h3>
     <div class="widget">
       <ul>
         
@@ -229,7 +239,7 @@ gitment.render('comment')
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Brav3heart<br>
-      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
