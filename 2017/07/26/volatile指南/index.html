@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>volatile指南 | Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Managing volatility Java语言的volatile变量可以被认为是synchronized的低配版本；它们使用方式更加简单，性能成本也更低，但是它们只能在部分场合替代synchronized。这篇文章展示了如何有效使用volatile变量，给出了一些实例和注意事项。">
+<meta name="keywords" content="Java,译文,Brain Goetz,同步">
+<meta property="og:type" content="article">
+<meta property="og:title" content="volatile指南">
+<meta property="og:url" content="https://olwn.github.io/2017/07/26/volatile指南/index.html">
+<meta property="og:site_name" content="Blog">
+<meta property="og:description" content="Managing volatility Java语言的volatile变量可以被认为是synchronized的低配版本；它们使用方式更加简单，性能成本也更低，但是它们只能在部分场合替代synchronized。这篇文章展示了如何有效使用volatile变量，给出了一些实例和注意事项。">
+<meta property="og:updated_time" content="2017-07-26T15:50:08.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="volatile指南">
+<meta name="twitter:description" content="Managing volatility Java语言的volatile变量可以被认为是synchronized的低配版本；它们使用方式更加简单，性能成本也更低，但是它们只能在部分场合替代synchronized。这篇文章展示了如何有效使用volatile变量，给出了一些实例和注意事项。">
+  
+    <link rel="alternate" href="/atom.xml" title="Blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-102822425-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Blog</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Stay hungry, Stay foolish.</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-volatile指南" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/26/volatile指南/" class="article-date">
+  <time datetime="2017-07-26T14:54:38.000Z" itemprop="datePublished">2017-07-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      volatile指南
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://www.ibm.com/developerworks/java/library/j-jtp06197/index.html?ca=drs-" target="_blank" rel="external">Managing volatility</a></p>
+<p>Java语言的volatile变量可以被认为是<code>synchronized</code>的低配版本；它们使用方式更加简单，性能成本也更低，但是它们只能在部分场合替代<code>synchronized</code>。这篇文章展示了如何有效使用volatile变量，给出了一些实例和注意事项。<br><a id="more"></a><br>锁提供了两个主要特性：互斥访问和可见性。互斥访问意味着一个时刻只有一个线程可以拿到锁，这个属性可以用于实现协调线程访问共享数据。可见性的意义要微妙一些，它保证了对共享变量的修改会对后续拿到锁的线程可见。如果没有可见性保证，线程可能访问到过期的值。</p>
+<h2 id="volatile变量"><a href="#volatile变量" class="headerlink" title="volatile变量"></a>volatile变量</h2><p>volatile变量和<code>synchronized</code>的共同点是都提供了可见性，但是它不提供原子性。这意味着线程可以看到volatile变量的最新值。它们可以被用于提供线程安全性，但是仅仅能用在非常有限的case中：不涉及到多个变量的约束，或者是一个变量的现在值和将来值的约束。所以单独的volatile并不足以实现计数器，mutex，或者任何需要保持多个变量的不变性(比如start&lt;=end)的类。</p>
+<p>你可能倾向于使用volatile变量而不是锁，出于简单性或性能上的考量。volatile有些固定用法很好编写和阅读。另外，volatile变量不会导致线程阻塞，所以它们不太会导致可扩展性(scalability)问题。在读操作远多于写操作的场合，volatile变量比锁的性能更好。</p>
+<h4 id="正确使用volatile的条件"><a href="#正确使用volatile的条件" class="headerlink" title="正确使用volatile的条件"></a>正确使用volatile的条件</h4><p>你可以在某些情况下使用volatile而不用锁。如果想用volatile实现线程安全，下面两个条件必须同时满足。</p>
+<ul>
+<li>写操作不依赖于变量的当前值</li>
+</ul>
+<ul>
+<li>该变量不需要和其他变量保持不变性约束</li>
+</ul>
+<p>这两个条件说明了volatile变量的值独立于任何程序状态，包括该变量的当前值。</p>
+<p>第一个条件限制了volatile变量不能用于实现线程安全的计数器。虽然递增操作看起来是单个操作，但实际上是读-改-写操作的混合，而且必须保证原子性执行，volatile不能提供这种原子性。如果变量只被一个线程写，那么第一个条件可以忽略。</p>
+<p>大多数场景都会不满足其中一个条件，使得volatile变量不那么适合于实现线程安全。代码1展示了一个非线程安全的类，它包含了不变性，即一个范围的下界应该小于等于上界。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码1</span></div><div class="line"><span class="meta">@NotThreadSafe</span> </div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NumberRange</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> lower, upper;</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getLower</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> lower; &#125;</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">getUpper</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> upper; &#125;</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setLower</span><span class="params">(<span class="keyword">int</span> value)</span> </span>&#123; </div><div class="line">        <span class="keyword">if</span> (value &gt; upper) </div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(...);</div><div class="line">        lower = value;</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUpper</span><span class="params">(<span class="keyword">int</span> value)</span> </span>&#123; </div><div class="line">        <span class="keyword">if</span> (value &lt; lower) </div><div class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(...);</div><div class="line">        upper = value;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>因为range的状态变量之间存在约束，使用<code>volatile</code>的<code>lower</code>和<code>upper</code>不足以实现线程安全；同步是必须的。否则，在某个不幸运的时刻，两个线程分别执行<code>setLower</code>和<code>setUpper</code>会导致不变性被破坏。比如，初始状态是<code>(0, 5)</code>，A线程调用<code>setLower(4)</code>，同时B线程调用<code>setUpper(3)</code>，两个操作都可以通过检查，然后提交，得到<code>(4, 3)</code>这样一个无效的状态。我们需要保证<code>setLower()</code>和<code>setUpper</code>操作保持原子性，volatile不能做到。</p>
+<h4 id="性能考量"><a href="#性能考量" class="headerlink" title="性能考量"></a>性能考量</h4><p>使用volatile的主要动机是简洁：某些场合，使用volatile变量比锁简单。次要动机是性能：某些场合，volatile变量可以提供性能更好的同步机制。</p>
+<p>很难说谁一定比谁快，尤其是还涉及到JVM的复杂操作。(比如JVM可以完全优化移除锁)。可以这样说，对于大多数目前的处理器架构，volatile读是很便宜的，几乎等同于读一个普通变量。volatile写操作会明显比普通写昂贵，因为需要内存栅栏以保证可见性，不过依然比锁便宜。</p>
+<p>不同于锁，volatile操作不会阻塞，所以volatile提供了更好的可扩展性。在读操作远多于写操作的场合，volatile变量可以提供更好的性能。</p>
+<h2 id="volatile的正确使用场景"><a href="#volatile的正确使用场景" class="headerlink" title="volatile的正确使用场景"></a>volatile的正确使用场景</h2>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://olwn.github.io/2017/07/26/volatile指南/" data-id="cj5l6sclf0001i3jgjxcc5pag" class="article-share-link">Delen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2017/07/24/无锁算法/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ouder</strong>
+      <div class="article-nav-title">无锁算法</div>
+    </a>
+  
+</nav>
+
+  
+
+<div id="comment"></div>
+</article>
+
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+<script>
+var gitment = new Gitment({
+  owner: 'olwn',
+  repo: 'Olwn.github.io',
+  oauth: {
+    client_id: 'cb8e344afeb5bdef9df8',
+    client_secret: '3f7cabefb43a88fa94d4263acb62974ccf731d6b',
+  },
+})
+gitment.render('comment')
+</script>
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Labels</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代理/">代理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/泛型/">泛型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Brain-Goetz/" style="font-size: 17.5px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 12.5px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 12.5px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/代理/" style="font-size: 10px;">代理</a> <a href="/tags/同步/" style="font-size: 15px;">同步</a> <a href="/tags/构造/" style="font-size: 12.5px;">构造</a> <a href="/tags/泛型/" style="font-size: 10px;">泛型</a> <a href="/tags/译文/" style="font-size: 17.5px;">译文</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archieven</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recente berichten</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2017/07/26/volatile指南/">volatile指南</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/24/无锁算法/">无锁算法</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/23/同步优化/">同步优化</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/22/使用动态代理/">使用动态代理</a>
+          </li>
+        
+          <li>
+            <a href="/2017/07/21/好的监听器/">好的监听器</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 Brav3heart<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+  </div>
+</body>
+</html>

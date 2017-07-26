@@ -13,7 +13,8 @@
 <meta property="og:description" content="Introduction to nonblocking algorithms 当多个线程访问一个变量时，所有线程都要使用同步，否则发发生很不好的结果。Java语言中的最主要的同步方式是使用synchronized关键字，它保证了互斥访问和可见性。正确的使用synchronized可以得到线程安全的程序，但是锁可能太重了，尤其是对很短的代码段而言。">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp04186/quiescent.gif">
 <meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp04186/intermediate.gif">
-<meta property="og:updated_time" content="2017-07-25T13:49:15.000Z">
+<meta property="og:image" content="https://www.ibm.com/developerworks/java/library/j-jtp04186/final.gif">
+<meta property="og:updated_time" content="2017-07-25T13:55:43.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="无锁算法">
 <meta name="twitter:description" content="Introduction to nonblocking algorithms 当多个线程访问一个变量时，所有线程都要使用同步，否则发发生很不好的结果。Java语言中的最主要的同步方式是使用synchronized关键字，它保证了互斥访问和可见性。正确的使用synchronized可以得到线程安全的程序，但是锁可能太重了，尤其是对很短的代码段而言。">
@@ -134,13 +135,14 @@ ga('send', 'pageview');
 <p><img src="https://www.ibm.com/developerworks/java/library/j-jtp04186/intermediate.gif" alt="图2 "></p>
 <p>insert操作首先检查队列是否在中间状态(语句A)。如果是，一定存在其他某个线程正在尝试insert，执行到了C、D之间。这时不需要等待那个线程完成，当前线程可以帮助它完成insert操作，即把tail指针移动一步(语句B)。它会持续的检查tail指针，直到队列处在正常状态，这时它才会开始自己的insert操作。</p>
 <p>第一个CAS(语句C)可能失败，因为可能两个线程都在访问队列的最后一个元素；失败意味着没有生效，需要重试。如果第二个CAS操作(D)失败，线程不需要重试，因为其他线程会替它完成(使用语句B)。</p>
-<h4 id="非阻塞算法底层"><a href="#非阻塞算法底层" class="headerlink" title="非阻塞算法底层"></a>非阻塞算法底层</h4><p>如果你深入到JVM和OS，你会发现到处都是非阻塞算法。GC使用它们加速并发和并发收集；调度起使用它们高效的调度线程、实现复杂锁。在Java6中，基于锁的<code>SynchronousQueue</code>被替换为非阻塞的版本。几乎没有开发者直接使用<code>SynchronousQueue</code>，但是它有被用作线程池的工作队列，参见<code>Executors.newCachedThreadPool()</code>。评测表明新的非阻塞异步队列提供了三倍的加速。Java的后续版本还有加入更多优化。</p>
+<p><img src="https://www.ibm.com/developerworks/java/library/j-jtp04186/final.gif" alt="图3"></p>
+<h4 id="非阻塞算法底层应用"><a href="#非阻塞算法底层应用" class="headerlink" title="非阻塞算法底层应用"></a>非阻塞算法底层应用</h4><p>如果你深入到JVM和OS，你会发现到处都是非阻塞算法。GC使用它们加速并发和并发收集；调度起使用它们高效的调度线程、实现复杂锁。在Java6中，基于锁的<code>SynchronousQueue</code>被替换为非阻塞的版本。几乎没有开发者直接使用<code>SynchronousQueue</code>，但是它有被用作线程池的工作队列，参见<code>Executors.newCachedThreadPool()</code>。评测表明新的非阻塞异步队列提供了三倍的加速。Java的后续版本还有加入更多优化。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>非阻塞算法会比基于锁的算法复杂很多。开发非阻塞算法是非常专业的领域，算法正确性的证明极其困难。但是Java的并发性能的改进很多都来自于非阻塞算法的使用。随着并发性能变得日益重要，我们可以期待在未来的Java平台看到更多的非阻塞算法。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/24/无锁算法/" data-id="cj5jn17fb000eyqjgr8zlv5gc" class="article-share-link">Delen</a>
+      <a data-url="https://olwn.github.io/2017/07/24/无锁算法/" data-id="cj5l6scma0008i3jg2wh5xblp" class="article-share-link">Delen</a>
       
       
     </footer>
@@ -148,6 +150,15 @@ ga('send', 'pageview');
   
     
 <nav id="article-nav">
+  
+    <a href="/2017/07/26/volatile指南/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Nieuwer</strong>
+      <div class="article-nav-title">
+        
+          volatile指南
+        
+      </div>
+    </a>
   
   
     <a href="/2017/07/23/同步优化/" id="article-nav-older" class="article-nav-link-wrap">
@@ -218,6 +229,10 @@ gitment.render('comment')
       <ul>
         
           <li>
+            <a href="/2017/07/26/volatile指南/">volatile指南</a>
+          </li>
+        
+          <li>
             <a href="/2017/07/24/无锁算法/">无锁算法</a>
           </li>
         
@@ -231,10 +246,6 @@ gitment.render('comment')
         
           <li>
             <a href="/2017/07/21/好的监听器/">好的监听器</a>
-          </li>
-        
-          <li>
-            <a href="/2017/07/19/泛型陷阱/">泛型陷阱</a>
           </li>
         
       </ul>
