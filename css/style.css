@@ -1094,8 +1094,8 @@ a.article-title:hover {
 .article-entry pre,
 .article-entry .highlight {
   background: #e3e3e3;
-  margin: 0 -20px;
-  padding: 15px 20px 15px 15px;
+  margin: 0 15px 0 15px;
+  padding: 15px 20px;
   border-style: solid;
   border-color: #ddd;
   border-width: 1px 0;
