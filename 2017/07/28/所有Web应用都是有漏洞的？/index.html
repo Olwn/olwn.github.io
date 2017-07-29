@@ -12,7 +12,7 @@
 <meta property="og:url" content="https://olwn.github.io/2017/07/28/所有Web应用都是有漏洞的？/index.html">
 <meta property="og:site_name" content="Blog">
 <meta property="og:description" content="Are all stateful Web applications broken? 虽然Java生态中有很多Web框架，但是它们都是直接或间接建立在Servlet上的。Servlet API提供了很多有用的特性，包括使用HttpSession和ServletContext机制进行状态管理，帮助应用维护跨越多个请求的状态。然而，某些微妙的规则决定了共享状态的使用，很多应用都无意中违背了规则。结果是很">
-<meta property="og:updated_time" content="2017-07-28T16:24:24.000Z">
+<meta property="og:updated_time" content="2017-07-29T14:35:19.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="所有Web应用都是有漏洞的？">
 <meta name="twitter:description" content="Are all stateful Web applications broken? 虽然Java生态中有很多Web框架，但是它们都是直接或间接建立在Servlet上的。Servlet API提供了很多有用的特性，包括使用HttpSession和ServletContext机制进行状态管理，帮助应用维护跨越多个请求的状态。然而，某些微妙的规则决定了共享状态的使用，很多应用都无意中违背了规则。结果是很">
@@ -70,9 +70,9 @@ ga('send', 'pageview');
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Zoeken"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://olwn.github.io"></form>
@@ -123,12 +123,28 @@ ga('send', 'pageview');
 </ul>
 <h4 id="原子性失败"><a href="#原子性失败" class="headerlink" title="原子性失败"></a>原子性失败</h4><p>代码2展示了一个设置和获取游戏最高分的应用。它使用了一个<code>PlayerScore</code>对象表达最高分，这就是一个普通的JavaBean类，保存于应用范围的<code>ServletContext</code>。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码2</span></div><div class="line"><span class="function"><span class="keyword">public</span> PlayerScore <span class="title">getHighScore</span><span class="params">()</span> </span>&#123;</div><div class="line">    ServletContext ctx = getServletConfig().getServletContext();</div><div class="line">    PlayerScore hs = (PlayerScore) ctx.getAttribute(<span class="string">"highScore"</span>);</div><div class="line">    PlayerScore result = <span class="keyword">new</span> PlayerScore();</div><div class="line">    result.setName(hs.getName());</div><div class="line">    result.setScore(hs.getScore());</div><div class="line">    <span class="keyword">return</span> result;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateHighScore</span><span class="params">(PlayerScore newScore)</span> </span>&#123;</div><div class="line">    ServletContext ctx = getServletConfig().getServletContext();</div><div class="line">    PlayerScore hs = (PlayerScore) ctx.getAttribute(<span class="string">"highScore"</span>);</div><div class="line">    <span class="keyword">if</span> (newScore.getScore() &gt; hs.getScore()) &#123;</div><div class="line">        hs.setName(newScore.getName());</div><div class="line">        hs.setScore(newScore.getScore());</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>代码2有多处缺陷。</p>
-<h4 id="可见性失败"><a href="#可见性失败" class="headerlink" title="可见性失败"></a>可见性失败</h4><h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2>
+<p>代码2有多处缺陷。它使用了一个可变的holder存放最高分选手的名字和分数。每次新高记录生成，必须一起更新名字和分数。</p>
+<p>假如现在的最高分选手是Bob，1000分。然后Joe拿了1100分，几乎同时另一个用户查询最高分。<code>getHighScore()</code>方法会从servlet context中检索名字和分数。在某个不走运的时刻，可能会访问到Bob的名字和Joe的分数。（这种错误对于一个免费游戏网站可能不是什么大问题，但是如果把分数换成银行存款，问题就大了）这就是原子性失败，两个应该原子性完成的操作没有被原子性执行，其他线程就可能看到共享数据的不一致状态。</p>
+<p>另外，因为分数更新逻辑是 <em>check-then-act</em> 这样的模式，可能会有两个线程竞争更新，出现意想不到的结果。假设现在分数是1000，两个线程同时试图设置最高分为1100和1200。可能会出现两个线程都通过了 “是否比现在分数高” 检查，然后都执行了更新代码。取决于两线程执行的先后顺序，结果可能是1200，也可能是1100。</p>
+<h4 id="可见性失败"><a href="#可见性失败" class="headerlink" title="可见性失败"></a>可见性失败</h4><p>比原子性失败更微妙的是 <em>可见性失败</em> 。不加锁情况下，一个线程写变量，另一个线程读同个变量，可能会读到过期的值。更糟的是，可能出现，读线程读到了最新的x值，但是过期的y值，即使y比x更早写入。可见性失败的微妙之处是它们毫无预兆的发生，debug非常困难。可见性失败是数据竞争造成的，没有恰当的同步机制。有数据竞争的程序是脆弱的，因为它们的行为不能可靠的被预测。</p>
+<p>Java内存模型(JMM)定义了保证一个读线程可以读到另一个写线程产生的最新值的条件。JMM定义了一种顺序，叫 <em>happens-before</em>。跨线程的<em>happens-before</em>顺序只能通过使用同步锁或者volatile变量创建。缺乏同步时，Java平台会尽最大努力延迟或修改这个顺序，使得一个线程的修改操作对另外的线程可见。</p>
+<p>代码2存在可见性失败和原子性失败。<code>updateHighScore()</code>方法从<code>ServletContext</code>查询<code>HighScore</code>对象，然后修改<code>HighScore</code>对象的状态。我想说的是，我们在依赖运气，对于那些希望对其他线程可见的修改，但是又不使用 <em>happens-before</em> 顺序，可见性就只能靠好运气了。</p>
+<h2 id="可能的解决方案"><a href="#可能的解决方案" class="headerlink" title="可能的解决方案"></a>可能的解决方案</h2><p>虽然servlet规范没有描述容器必须提供哪些 <em>happens-before</em>保证 ，但有一个是必须的：放置一个属性到共享容器(<code>HttpSession</code>，<code>ServletContext</code>) <em>happens-before</em> 另一个查找这个属性的线程。</p>
+<h4 id="set-after-write技巧"><a href="#set-after-write技巧" class="headerlink" title="set-after-write技巧"></a>set-after-write技巧</h4><p>有一个实践技巧，更新session数据时，修改操作之后必须调用<code>setAttribute()</code>。代码3展示了一个重写的<code>updateHighScore()</code>。（这么做的一个动机是告诉容器值发生了变化，这样可以在分布式Web应用的多个实例之间重新同步session数据）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码3</span></div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateHighScore</span><span class="params">(PlayerScore newScore)</span> </span>&#123;</div><div class="line">    ServletContext ctx = getServletConfig().getServletContext();</div><div class="line">    PlayerScore hs = (PlayerScore) ctx.getAttribute(<span class="string">"highScore"</span>);</div><div class="line">    <span class="keyword">if</span> (newScore.getScore() &gt; hs.getScore()) &#123;</div><div class="line">        hs.setName(newScore.getName());</div><div class="line">        hs.setScore(newScore.getScore());</div><div class="line">        ctx.setAttribute(<span class="string">"highScore"</span>, hs);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>遗憾的是，虽然这种方法可以解决在集群环境下高效复制session和应用状态，但是不足以解决接基本的线程安全问题。所以它可以解决可见性问题但是不能在原子性问题上提供帮助。</p>
+<h4 id="借用同步"><a href="#借用同步" class="headerlink" title="借用同步"></a>借用同步</h4><p>set-after-write 技巧可以消除可见性问题，因为 <em>happens-before</em> 关系是可传递的，<code>setAttribute()</code> <em>happens-before</em> <code>getAttribute()</code>。因为对<code>HighScore</code>状态的更新发生于<code>setAttribute()</code>之前，而这<em>happens-before</em>  <code>getAttribute()</code>，这又<em>happens-before</em> 从<code>getAttribute()</code>返回，传递性告诉我们<code>getHighScore()</code>调用者至少可以拿到最近一次执行<code>setAttribute()</code>后的状态。这种技术被称为 <em>借用同步</em> (piggybacking on synchronization)，因为<code>getHighScore</code>和<code>updateHighScore</code>可以使用关于<code>getAttribute</code>和<code>setAttribute</code>的知识提供可见性保证。然而，这还不够，set-after-write 技巧对状态复制有效，但是不能提供线程安全。</p>
+<h4 id="利用不可变"><a href="#利用不可变" class="headerlink" title="利用不可变"></a>利用不可变</h4><p>创建线程安全的应用的一个有用的技术是，尽量使用不可变量。代码4展示了使用 <em>不可变</em> 重写的<code>HighScore</code>，不会再出现运动员名字分数错配的问题，也不会出现读到过期值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 代码4</span></div><div class="line">Public <span class="class"><span class="keyword">class</span> <span class="title">HighScore</span> </span>&#123;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">final</span> String name;</div><div class="line">    <span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">int</span> score;</div><div class="line"> </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">HighScore</span><span class="params">(String name, <span class="keyword">int</span> score)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.name = name;</div><div class="line">        <span class="keyword">this</span>.score = score;</div><div class="line">    &#125;</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">public</span> PlayerScore <span class="title">getHighScore</span><span class="params">()</span> </span>&#123;</div><div class="line">    ServletContext ctx = getServletConfig().getServletContext();</div><div class="line">    <span class="keyword">return</span> (PlayerScore) ctx.getAttribute(<span class="string">"highScore"</span>);</div><div class="line">&#125;</div><div class="line"> </div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">updateHighScore</span><span class="params">(PlayerScore newScore)</span> </span>&#123;</div><div class="line">    ServletContext ctx = getServletConfig().getServletContext();</div><div class="line">    PlayerScore hs = (PlayerScore) ctx.getAttribute(<span class="string">"highScore"</span>);</div><div class="line">    <span class="keyword">if</span> (newScore.score &gt; hs.score) </div><div class="line">        ctx.setAttribute(<span class="string">"highScore"</span>, newScore);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>代码4的潜在问题就少多了。只存储单个不可变数据消除了原子性失败的风险。</p>
+<p>把不可变对象放在容器里避免了大多数原子性和可见性失败；”不可变”也可以是等效不可变。等效不可变是指那些可以被修改，但是一经发布从来不会被修改的变量，比如JavaBean的setter方法在对象被放到<code>HttpSession</code>后从来不会被调用。</p>
+<p><code>HttpSession</code>中的数据不仅同session的请求访问，还可能被容器自身访问到，如果容器需要做状态复制这样的工作。</p>
+<p>所有放在<code>HttpSession</code>或<code>ServletContext</code>的数据都应该要么是线程安全的，要么是等效不可变的。</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="https://olwn.github.io/2017/07/28/所有Web应用都是有漏洞的？/" data-id="cj5o2w3uw0008f9jgacq35jmu" class="article-share-link">Partager</a>
+      <a data-url="https://olwn.github.io/2017/07/28/所有Web应用都是有漏洞的？/" data-id="cj5pep2h90014dajgoiy3km87" class="article-share-link">Delen</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/同步/">同步</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/译文/">译文</a></li></ul>
@@ -141,7 +157,7 @@ ga('send', 'pageview');
   
   
     <a href="/2017/07/26/volatile指南/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Ancien</strong>
+      <strong class="article-nav-caption">Ouder</strong>
       <div class="article-nav-title">volatile指南</div>
     </a>
   
@@ -174,7 +190,7 @@ gitment.render('comment')
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Mot-clés</h3>
+    <h3 class="widget-title">Labels</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Brain-Goetz/">Brain Goetz</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EffectiveJava/">EffectiveJava</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/GC/">GC</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/JVM/">JVM</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java/">Java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/代理/">代理</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/同步/">同步</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/构造/">构造</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/泛型/">泛型</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/译文/">译文</a></li></ul>
     </div>
@@ -184,7 +200,7 @@ gitment.render('comment')
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
       <a href="/tags/Brain-Goetz/" style="font-size: 17.5px;">Brain Goetz</a> <a href="/tags/EffectiveJava/" style="font-size: 12.5px;">EffectiveJava</a> <a href="/tags/GC/" style="font-size: 12.5px;">GC</a> <a href="/tags/JVM/" style="font-size: 10px;">JVM</a> <a href="/tags/Java/" style="font-size: 20px;">Java</a> <a href="/tags/代理/" style="font-size: 10px;">代理</a> <a href="/tags/同步/" style="font-size: 15px;">同步</a> <a href="/tags/构造/" style="font-size: 12.5px;">构造</a> <a href="/tags/泛型/" style="font-size: 10px;">泛型</a> <a href="/tags/译文/" style="font-size: 17.5px;">译文</a>
     </div>
@@ -193,7 +209,7 @@ gitment.render('comment')
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
+    <h3 class="widget-title">Archieven</h3>
     <div class="widget">
       <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">June 2017</a></li></ul>
     </div>
@@ -203,7 +219,7 @@ gitment.render('comment')
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Articles récents</h3>
+    <h3 class="widget-title">Recente berichten</h3>
     <div class="widget">
       <ul>
         
@@ -240,7 +256,7 @@ gitment.render('comment')
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 Brav3heart<br>
-      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
